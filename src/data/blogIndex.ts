@@ -1,9 +1,3 @@
-import soloContractor from "./blogs/solo-contractor.md?raw";
-import clientQuestion from "./blogs/client-question.md?raw";
-import genAiCompression from "./blogs/2025-01-15-ship.md?raw";
-import tabAutocomplete from "./blogs/2025-01-21-tab.md?raw";
-import mvp from "./blogs/mvp.md?raw";
-
 export type BlogPost = {
   slug: string;
   title: string;
@@ -23,6 +17,7 @@ type SearchHit = {
 
 type ParsedFrontMatter = {
   title?: string;
+  slug?: string;
   date?: string;
   tags?: string[];
   summary?: string;
@@ -30,16 +25,43 @@ type ParsedFrontMatter = {
 
 type BlogSource = {
   slug: string;
+  aliases?: string[];
   raw: string;
 };
 
-const sources: BlogSource[] = [
-  { slug: "2025-01-15-ship", raw: genAiCompression },
-  { slug: "2025-01-21-tab", raw: tabAutocomplete },
-  { slug: "solo-contractor", raw: soloContractor },
-  { slug: "client-question", raw: clientQuestion },
-  { slug: "mvp", raw: mvp },
-];
+const blogModules = import.meta.glob("./blogs/*.md", {
+  eager: true,
+  import: "default",
+  query: "?raw",
+}) as Record<string, string>;
+
+const legacySlugAliases: Record<string, string[]> = {
+  "70-genai": ["2025-01-15-ship"],
+  "tab-autocomplete": ["2025-01-21-tab"],
+  "chatbot-training-alignment": ["2025-03-08-chatbot"],
+  "cybersecurity-harsh-truth": ["2025-03-20-beautiful-lies"],
+  "design-tradeoffs": ["2025-04-20-design-tradeoffs"],
+  "premature-scaling": ["2025-05-04-overengineering-caching"],
+  "algorithm-beats-language": ["2025-08-09-algorithm-beats-language"],
+  "evm-ctf-eip7702": ["2025-09-11-ctf-eip7702"],
+  "rust-iterators": ["2025-11-05-rust-iterators"],
+  "free-will": ["2026-01-11-freedome"],
+  "agentic-workflow": ["2026-01-17-agentic-workflow"],
+  "automation-risk": ["0_downsides_of_automation"],
+};
+
+const sources: BlogSource[] = Object.entries(blogModules).map(([path, raw]) => {
+  const fallbackSlug = path
+    .split("/")
+    .pop()!
+    .replace(/\.md$/, "");
+
+  return {
+    slug: fallbackSlug,
+    aliases: legacySlugAliases[fallbackSlug],
+    raw,
+  };
+});
 
 function parseFrontMatter(raw: string): { meta: ParsedFrontMatter; body: string } {
   const match = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
@@ -62,8 +84,8 @@ function parseFrontMatter(raw: string): { meta: ParsedFrontMatter; body: string 
       if (valueRaw.startsWith("[") && valueRaw.endsWith("]")) {
         try {
           const parsed = JSON.parse(valueRaw);
-          if (Array.isArray(parsed)) {
-            meta[key.trim() as keyof ParsedFrontMatter] = parsed;
+          if (key.trim() === "tags" && Array.isArray(parsed)) {
+            meta.tags = parsed.map(String);
             return;
           }
         } catch (_) {
@@ -102,14 +124,16 @@ function tokenize(text: string): string[] {
 }
 
 const blogMap = new Map<string, BlogPost>();
+const aliasMap = new Map<string, string>();
 const tagCounts = new Map<string, number>();
 const invertedIndex = new Map<string, Set<string>>();
 
 function indexOnce() {
   if (blogMap.size) return;
 
-  sources.forEach(({ slug, raw }) => {
+  sources.forEach(({ slug: fallbackSlug, aliases = [], raw }) => {
     const { meta, body } = parseFrontMatter(raw);
+    const slug = meta.slug || fallbackSlug;
     const title = meta.title || slug;
     const tags = meta.tags?.map((t) => t.toLowerCase()) || [];
     const plainLines = markdownToPlainLines(body);
@@ -125,6 +149,9 @@ function indexOnce() {
     };
 
     blogMap.set(slug, post);
+    aliases
+      .concat(legacySlugAliases[slug] || [])
+      .forEach((alias) => aliasMap.set(alias.toLowerCase(), slug));
 
     tags.forEach((tag) => {
       tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
@@ -152,6 +179,9 @@ function findBySlugOrTitle(input: string): BlogPost | undefined {
   indexOnce();
   const lowered = input.toLowerCase();
   if (blogMap.has(lowered)) return blogMap.get(lowered);
+
+  const canonicalSlug = aliasMap.get(lowered);
+  if (canonicalSlug) return blogMap.get(canonicalSlug);
 
   const bySlug = Array.from(blogMap.values()).find((p) => p.slug.toLowerCase() === lowered);
   if (bySlug) return bySlug;

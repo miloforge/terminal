@@ -32,6 +32,7 @@ import { formatBytes, formatMtime, resolveFileMeta } from "@utils/fileMeta";
 import { openChat } from "@stores/chatStore";
 import { findFileByName, listFiles, listTextFiles } from "../../data/files";
 import { blogIndex } from "../../data/blogIndex";
+import type { BlogPost } from "../../data/blogIndex";
 import packageJson from "../../../package.json";
 import {
   runSearch,
@@ -442,18 +443,25 @@ type BlogSurfaceEntry = {
   body: string;
 };
 
-function getBlogSurfaceEntries(): BlogSurfaceEntry[] {
-  return blogIndex.getAll().map((post) => ({
+function toBlogSurfaceEntry(post: BlogPost): BlogSurfaceEntry {
+  return {
     slug: post.slug,
     title: post.title,
     date: post.date,
     tags: post.tags,
     summary: post.summary,
     body: post.body,
-  }));
+  };
+}
+
+function getBlogSurfaceEntries(): BlogSurfaceEntry[] {
+  return blogIndex.getAll().map(toBlogSurfaceEntry);
 }
 
 function findBlogSurfaceEntry(input: string): BlogSurfaceEntry | undefined {
+  const indexedPost = blogIndex.findBySlugOrTitle(input);
+  if (indexedPost) return toBlogSurfaceEntry(indexedPost);
+
   const lowered = input.toLowerCase();
   const entries = getBlogSurfaceEntries();
 

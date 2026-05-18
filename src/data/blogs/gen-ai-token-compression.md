@@ -1,6 +1,6 @@
 ---
 title: "70% fewer Gen AI tokens in a hot path"
-date: "2026-04-14"
+date: "2025-01-15"
 slug: "70-genai"
 tags: ["resourcefulness", "optimization", "gen-ai"]
 summary: "Same decision point, 70% fewer tokens, without missing a 24-hour delivery window."

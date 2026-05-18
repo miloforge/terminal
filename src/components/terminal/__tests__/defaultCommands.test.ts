@@ -11,6 +11,13 @@ import { findFileByName } from "../../../data/files";
 import type { TerminalProps } from "@types";
 
 const noop = () => {};
+const blogFileCount = Object.keys(
+  import.meta.glob("../../../data/blogs/*.md", {
+    eager: true,
+    import: "default",
+    query: "?raw",
+  }),
+).length;
 
 function buildRegistry(props: TerminalProps = {}) {
   const registry = new CommandRegistry();
@@ -146,7 +153,12 @@ describe("default commands", () => {
     expect(listSummary).toContain("Why I Choose to Work as a Solo Contractor");
     expect(listSummary).toContain("Improved Tab autocompletion");
     expect(listSummary).toContain("Building an MVP");
+    expect(listSummary).toContain("Borrow or Take?");
     expect(listSummary).toContain("\"type\":\"logs\"");
+    const logSeg = listLines
+      .flat()
+      .find((seg) => typeof seg === "object" && "type" in seg && seg.type === "logs") as any;
+    expect(logSeg.items).toHaveLength(blogFileCount);
 
     const readOut = await blogHandler?.({
       args: ["read", "solo-contractor"],

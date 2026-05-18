@@ -741,7 +741,6 @@ function LogAccordion({ items }: { items: LogSegment["items"] }) {
                     segment={{
                       type: "markdown",
                       markdown: item.body,
-                      title: item.note,
                     }}
                   />
                 ) : (
