@@ -130,24 +130,26 @@ describe("default commands", () => {
     expect(lines.join("\n")).toContain("binary");
   });
 
-  it("lists blog posts and supports reading", async () => {
+  it("lists blogs in the accordion view and supports reading", async () => {
     const { registry, model } = buildRegistry();
-    const blogHandler = registry.get("blog")?.handler;
-    expect(blogHandler).toBeTruthy();
+    const blogsHandler = registry.get("blogs")?.handler;
+    expect(blogsHandler).toBeTruthy();
 
-    const listOut = await blogHandler?.({
+    const listOut = await blogsHandler?.({
       args: ["list"],
-      raw: "blog list",
+      raw: "blogs list",
       model,
       registry,
     });
     const listLines = Array.isArray(listOut) ? listOut : [listOut];
-    expect(listLines.join("\n")).toContain("blog posts:");
-    expect(listLines.join("\n")).toContain("solo-contractor");
+    const listSummary = JSON.stringify(listLines);
+    expect(listSummary).toContain("Why I Choose to Work as a Solo Contractor");
+    expect(listSummary).toContain("Improved Tab autocompletion");
+    expect(listSummary).toContain("\"type\":\"logs\"");
 
-    const readOut = await blogHandler?.({
+    const readOut = await blogsHandler?.({
       args: ["read", "solo-contractor"],
-      raw: "blog read solo-contractor",
+      raw: "blogs read solo-contractor",
       model,
       registry,
     });
@@ -160,14 +162,14 @@ describe("default commands", () => {
     expect(markdownLine?.[0]).toMatchObject({ markdown: expect.stringContaining("Why autonomy matters") });
   });
 
-  it("searches blog posts and includes them in grep", async () => {
+  it("searches consolidated blogs and includes them in grep", async () => {
     const { registry, model } = buildRegistry();
-    const blogHandler = registry.get("blog")?.handler;
+    const blogsHandler = registry.get("blogs")?.handler;
     const grepHandler = registry.get("grep")?.handler;
 
-    const searchOut = await blogHandler?.({
+    const searchOut = await blogsHandler?.({
       args: ["search", "kickoff"],
-      raw: "blog search kickoff",
+      raw: "blogs search kickoff",
       model,
       registry,
     });

@@ -10,6 +10,7 @@ type AllowedCommand = {
 };
 
 const ALLOWED: AllowedCommand[] = [
+  { command: "blogs", subcommand: "read", maxArgLength: 50 },
   { command: "blog", subcommand: "read", maxArgLength: 50 },
   { command: "logs", subcommand: "read", maxArgLength: 50 },
 ];

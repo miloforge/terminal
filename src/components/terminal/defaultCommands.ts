@@ -15,6 +15,8 @@ import {
   SearchHit,
   SampleWork,
   ActivityTreeNode,
+  LogItem,
+  SubcommandSuggestContext,
 } from "@types";
 import {
   buildAvatarSegment,
@@ -291,14 +293,9 @@ const ACTIVITY_TREE_NODES: ActivityTreeNode[] = [
         command: "selected_cases",
       },
       {
-        id: "explore-logs",
-        title: "Engineering logs",
-        command: "logs list",
-      },
-      {
-        id: "explore-blog",
-        title: "Blog index",
-        command: "blog list",
+        id: "explore-blogs",
+        title: "Blogs",
+        command: "blogs list",
       },
     ],
   },
@@ -435,6 +432,103 @@ function renderMarkdownBox(title: string, content: string): string[] {
 
   const horizontal = "─".repeat(Math.max(8, title.length + 6));
   return [`┌─ ${title}`, `├${horizontal}`, ...out, `└${horizontal}`];
+}
+
+type BlogSurfaceKind = "blog" | "log";
+
+type BlogSurfaceEntry = {
+  kind: BlogSurfaceKind;
+  slug: string;
+  title: string;
+  date?: string;
+  tags: string[];
+  summary?: string;
+  body: string;
+};
+
+function getBlogSurfaceEntries(): BlogSurfaceEntry[] {
+  const posts = blogIndex.getAll().map((post) => ({
+    kind: "blog" as const,
+    slug: post.slug,
+    title: post.title,
+    date: post.date,
+    tags: post.tags,
+    summary: post.summary,
+    body: post.body,
+  }));
+
+  const logs = logsIndex.getAll().map((entry) => ({
+    kind: "log" as const,
+    slug: entry.slug,
+    title: entry.title,
+    date: entry.date,
+    tags: entry.tags,
+    summary: entry.summary,
+    body: entry.body,
+  }));
+
+  return [...posts, ...logs].sort((a, b) => {
+    if (a.date && b.date) return b.date.localeCompare(a.date);
+    if (a.date) return -1;
+    if (b.date) return 1;
+    return a.title.localeCompare(b.title);
+  });
+}
+
+function findBlogSurfaceEntry(input: string): BlogSurfaceEntry | undefined {
+  const lowered = input.toLowerCase();
+  const entries = getBlogSurfaceEntries();
+
+  return (
+    entries.find((entry) => entry.slug.toLowerCase() === lowered) ||
+    entries.find((entry) => entry.title.toLowerCase() === lowered) ||
+    entries.find((entry) => entry.title.toLowerCase().includes(lowered))
+  );
+}
+
+function searchBlogSurfaceEntries(query: string) {
+  const hits = [
+    ...blogIndex.search(query).map((hit) => ({ ...hit, kind: "blog" as const })),
+    ...logsIndex.search(query).map((hit) => ({ ...hit, kind: "log" as const })),
+  ];
+  const entries = getBlogSurfaceEntries();
+  const entryByKey = new Map(
+    entries.map((entry) => [`${entry.kind}:${entry.slug}`, entry]),
+  );
+
+  return hits.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    const entryA = entryByKey.get(`${a.kind}:${a.slug}`);
+    const entryB = entryByKey.get(`${b.kind}:${b.slug}`);
+    if (entryA?.date && entryB?.date) return entryB.date.localeCompare(entryA.date);
+    return a.title.localeCompare(b.title);
+  });
+}
+
+function listBlogSurfaceTags(): Array<{ tag: string; count: number }> {
+  const counts = new Map<string, number>();
+  getBlogSurfaceEntries().forEach((entry) => {
+    entry.tags.forEach((tag) => {
+      counts.set(tag, (counts.get(tag) || 0) + 1);
+    });
+  });
+
+  return Array.from(counts.entries())
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+}
+
+function toBlogLogItem(entry: BlogSurfaceEntry, mode: "summary" | "full"): LogItem {
+  return {
+    date: entry.date || "",
+    note: entry.title,
+    body:
+      mode === "full"
+        ? [entry.summary, entry.body].filter(Boolean).join("\n\n")
+        : entry.summary,
+    slug: entry.slug,
+    kind: entry.kind,
+  };
 }
 
 export function registerDefaultCommands({
@@ -826,6 +920,138 @@ An investor-ready MVP shipped in 10 days for under $300, avoiding a larger upfro
     );
   };
 
+  const blogsHandler = ({ args }: CommandHandlerContext): TerminalLineInput[] => {
+    const first = (args[0] || "list").toLowerCase();
+    const effectiveArgs = first.startsWith("--") ? ["list", ...args] : args;
+    const sub = (effectiveArgs[0] || "list").toLowerCase();
+
+    if (sub === "list") {
+      let tag: string | undefined;
+      let searchTerm: string | undefined;
+
+      for (let i = 1; i < effectiveArgs.length; i++) {
+        const token = effectiveArgs[i];
+        if (token === "--tag" && effectiveArgs[i + 1]) {
+          tag = effectiveArgs[i + 1].toLowerCase();
+          i++;
+          continue;
+        }
+        if ((token === "--search" || token === "--q") && effectiveArgs[i + 1]) {
+          searchTerm = effectiveArgs[i + 1];
+          i++;
+        }
+      }
+
+      let entries = getBlogSurfaceEntries();
+      if (tag) {
+        entries = entries.filter((entry) => entry.tags.includes(tag));
+      }
+      if (searchTerm) {
+        const hits = searchBlogSurfaceEntries(searchTerm);
+        const hitKeys = new Set(hits.map((hit) => `${hit.kind}:${hit.slug}`));
+        entries = entries.filter((entry) => hitKeys.has(`${entry.kind}:${entry.slug}`));
+      }
+
+      if (!entries.length) {
+        return [
+          "blogs:",
+          "  no entries found" + (tag ? ` for tag '${tag}'` : ""),
+          "",
+          "try: blogs tags",
+        ];
+      }
+
+      return [
+        [
+          {
+            type: "logs",
+            items: entries.map((entry) => toBlogLogItem(entry, "full")),
+          },
+        ],
+      ];
+    }
+
+    if (sub === "read") {
+      const query = effectiveArgs.slice(1).join(" ").trim();
+      if (!query) return ["usage: blogs read <slug|title>"];
+
+      const entry = findBlogSurfaceEntry(query);
+      if (!entry) return [`blog entry not found: ${query}`];
+
+      return [
+        [
+          {
+            type: "logs",
+            items: [toBlogLogItem(entry, "full")],
+          },
+        ],
+        "",
+        [
+          {
+            type: "markdown",
+            title: entry.title,
+            markdown: [entry.summary, entry.body].filter(Boolean).join("\n\n"),
+          },
+        ],
+      ];
+    }
+
+    if (sub === "search") {
+      const query = effectiveArgs.slice(1).join(" ").trim();
+      if (!query) return ["usage: blogs search <query>"];
+      const hits = searchBlogSurfaceEntries(query);
+      if (!hits.length) return [`no blog matches for "${query}"`];
+
+      const lines = hits.map((hit) => {
+        const summary = hit.summary ? ` — ${hit.summary}` : "";
+        const source = hit.kind === "log" ? "log" : "blog";
+        return `  ${hit.slug.padEnd(18)} (${hit.score}) [${source}] ${hit.title}${summary}`;
+      });
+      return ["blogs search results:", ...lines];
+    }
+
+    if (sub === "tags") {
+      const tags = listBlogSurfaceTags();
+      if (!tags.length) return ["no tags yet"];
+      return [
+        "tags:",
+        ...tags.map((t) => `  ${t.tag.padEnd(16)} ${t.count}`),
+      ];
+    }
+
+    return [
+      "usage:",
+      "  blogs list [--tag t] [--search q]",
+      "  blogs read <slug|title>",
+      "  blogs search <query>",
+      "  blogs tags",
+    ];
+  };
+
+  const blogsSubcommandSuggestions = ({
+    prefix,
+    parts,
+    hasTrailingSpace,
+  }: SubcommandSuggestContext) => {
+    const subToken = (parts[1] || "").toLowerCase();
+    const wantsRead = subToken === "read" || prefix.toLowerCase() === "read";
+    if (!wantsRead) return undefined;
+
+    const titlePrefix =
+      parts.length > 2
+        ? parts.slice(2).join(" ")
+        : hasTrailingSpace || prefix.toLowerCase() === "read"
+          ? ""
+          : prefix;
+
+    return getBlogSurfaceEntries()
+      .map((entry) => entry.title)
+      .filter((title) =>
+        title.toLowerCase().startsWith(titlePrefix.toLowerCase()),
+      )
+      .map((title) => `read ${title}`);
+  };
+
   const helpHandler = ({
     registry: registryContext,
   }: CommandHandlerContext) => {
@@ -1191,169 +1417,16 @@ An investor-ready MVP shipped in 10 days for under $300, avoiding a larger upfro
       },
       { desc: "short bio" },
     )
-    .register(
-      "blog",
-      ({ args }) => {
-        const sub = (args[0] || "list").toLowerCase();
-
-        const formatPostRow = (
-          postSlug: string,
-          title: string,
-          date?: string,
-          tags?: string[],
-        ) => {
-          const tagDisplay = tags?.length ? ` #${tags.join(",")}` : "";
-          const datePart = date ? ` ${date}` : "";
-          return `  ${postSlug.padEnd(18)}${datePart} — ${title}${tagDisplay}`;
-        };
-
-        if (sub === "list") {
-          let tag: string | undefined;
-          let searchTerm: string | undefined;
-
-          for (let i = 1; i < args.length; i++) {
-            const token = args[i];
-            if (token === "--tag" && args[i + 1]) {
-              tag = args[i + 1];
-              i++;
-              continue;
-            }
-            if ((token === "--search" || token === "--q") && args[i + 1]) {
-              searchTerm = args[i + 1];
-              i++;
-              continue;
-            }
-          }
-
-          let posts = blogIndex.filterByTag(tag);
-          if (searchTerm) {
-            const hits = blogIndex.search(searchTerm);
-            const hitSlugs = new Set(hits.map((h) => h.slug));
-            posts = posts.filter((p) => hitSlugs.has(p.slug));
-          }
-
-          if (!posts.length) {
-            return [
-              "blog list:",
-              "  no posts found" + (tag ? ` for tag '${tag}'` : ""),
-              "",
-              "try: blog tags",
-            ];
-          }
-
-          const lines = ["blog posts:"];
-          posts.forEach((post) => {
-            lines.push(
-              formatPostRow(post.slug, post.title, post.date, post.tags),
-            );
-          });
-          return lines;
-        }
-
-        if (sub === "read") {
-          const query = args.slice(1).join(" ").trim();
-          if (!query) return ["usage: blog read <slug|title>"];
-
-          const post = blogIndex.findBySlugOrTitle(query);
-          if (!post) return [`blog not found: ${query}`];
-
-          return [
-            [
-              {
-                type: "logs",
-                items: [
-                  {
-                    date: post.date || "",
-                    note: post.title,
-                    body: post.summary,
-                    slug: post.slug,
-                    kind: "blog",
-                  },
-                ],
-              },
-            ],
-            "",
-            [
-              {
-                type: "markdown",
-                title: post.title,
-                markdown: [post.summary, post.body]
-                  .filter(Boolean)
-                  .join("\n\n"),
-              },
-            ],
-          ];
-        }
-
-        if (sub === "search") {
-          const query = args.slice(1).join(" ").trim();
-          if (!query) return ["usage: blog search <query>"];
-          const hits = blogIndex.search(query);
-          if (!hits.length) return [`no blog matches for "${query}"`];
-
-          const lines = hits.map((hit) => {
-            const summary = hit.summary ? ` — ${hit.summary}` : "";
-            return `  ${hit.slug.padEnd(18)} (${hit.score}) ${hit.title}${summary}`;
-          });
-          return ["blog search results:", ...lines];
-        }
-
-        if (sub === "tags") {
-          const tags = blogIndex.listTags();
-          if (!tags.length) return ["no tags yet"];
-          return [
-            "tags:",
-            ...tags.map((t) => `  ${t.tag.padEnd(10)} ${t.count}`),
-          ];
-        }
-
-        if (sub.startsWith("--")) {
-          const posts = blogIndex.filterByTag(args[1]);
-          if (!posts.length)
-            return ["usage: blog list [--tag <tag>] [--search <query>]"];
-          return [
-            "blog posts:",
-            ...posts.map((post) =>
-              formatPostRow(post.slug, post.title, post.date, post.tags),
-            ),
-          ];
-        }
-
-        return [
-          "usage:",
-          "  blog list [--tag t] [--search q]",
-          "  blog read <slug|title>",
-          "  blog search <query>",
-          "  blog tags",
-        ];
-      },
-      {
-        desc: "blog list/read/search/tags",
-        subcommands: ["list", "read", "search", "tags"],
-        subcommandSuggestions: ({ prefix, parts, hasTrailingSpace }) => {
-          const subToken = (parts[1] || "").toLowerCase();
-          const wantsRead =
-            subToken === "read" || prefix.toLowerCase() === "read";
-          if (!wantsRead) return undefined;
-
-          const titlePrefix =
-            parts.length > 2
-              ? parts.slice(2).join(" ")
-              : hasTrailingSpace || prefix.toLowerCase() === "read"
-                ? ""
-                : prefix;
-
-          const matches = blogIndex
-            .getAll()
-            .map((p) => p.title)
-            .filter((title) =>
-              title.toLowerCase().startsWith(titlePrefix.toLowerCase()),
-            );
-
-          return matches.map((title) => `read ${title}`);
-        },
-      },
-    )
+    .register("blogs", blogsHandler, {
+      desc: "blogs list/read/search/tags",
+      subcommands: ["list", "read", "search", "tags"],
+      subcommandSuggestions: blogsSubcommandSuggestions,
+    })
+    .register("blog", blogsHandler, {
+      desc: "alias for blogs",
+      subcommands: ["list", "read", "search", "tags"],
+      subcommandSuggestions: blogsSubcommandSuggestions,
+    })
     .register(
       "contact",
       () => {
@@ -1483,7 +1556,7 @@ An investor-ready MVP shipped in 10 days for under $300, avoiding a larger upfro
       { desc: "list downloadable files" },
     )
     .register("search", searchHandler, {
-      desc: "search logs, and resume text",
+      desc: "search blogs, selected cases, and resume text",
       subcommands: [],
     })
     .register("grep", searchHandler, {
@@ -1640,88 +1713,11 @@ An investor-ready MVP shipped in 10 days for under $300, avoiding a larger upfro
       },
       { desc: "interactive FAQ" },
     )
-    .register(
-      "logs",
-      ({ args }) => {
-        const sub = (args[0] || "list").toLowerCase();
-
-        if (sub === "list") {
-          const entries = logsIndex.getAll();
-          if (!entries.length) return ["no logs yet"];
-          return [
-            [
-              {
-                type: "logs",
-                items: entries.map((entry) => ({
-                  date: entry.date || "",
-                  note: entry.title,
-                  body: [entry.summary, entry.body]
-                    .filter(Boolean)
-                    .join("\n\n"),
-                  slug: entry.slug,
-                  kind: "log",
-                })),
-              },
-            ],
-          ];
-        }
-
-        if (sub === "read") {
-          const query = args.slice(1).join(" ").trim();
-          if (!query) return ["usage: logs read <slug|title>"];
-          const entry = logsIndex.findBySlugOrTitle(query);
-          if (!entry) return [`log not found: ${query}`];
-
-          return [
-            [
-              {
-                type: "logs",
-                items: [
-                  {
-                    date: entry.date || "",
-                    note: entry.title,
-                    body: [entry.summary, entry.body]
-                      .filter(Boolean)
-                      .join("\n\n"),
-                    slug: entry.slug,
-                    kind: "log",
-                  },
-                ],
-              },
-            ],
-            "",
-            [
-              {
-                type: "markdown",
-                title: entry.title,
-                markdown: entry.body,
-              },
-            ],
-          ];
-        }
-
-        if (sub === "search") {
-          const query = args.slice(1).join(" ").trim();
-          if (!query) return ["usage: logs search <query>"];
-          const hits = logsIndex.search(query);
-          if (!hits.length) return [`no log matches for \"${query}\"`];
-          const lines = hits.map(
-            (hit) =>
-              `  ${hit.slug.padEnd(18)} (${hit.score}) ${hit.title}${hit.summary ? ` — ${hit.summary}` : ""
-              }`,
-          );
-          return ["logs search results:", ...lines];
-        }
-
-        return [
-          "usage: logs list | logs read <slug|title> | logs search <query>",
-        ];
-      },
-      {
-        desc: "logs list/read/search",
-        subcommands: ["list", "read", "search"],
-      },
-    )
+    .register("logs", blogsHandler, {
+      desc: "alias for blogs",
+      subcommands: ["list", "read", "search", "tags"],
+      subcommandSuggestions: blogsSubcommandSuggestions,
+    })
     .register("whoami", whoamiHandler, { desc: "show profile card" })
     .register("theme", themeHandler, {
       desc: "apply a bundled theme (font + color)",
@@ -1847,7 +1843,7 @@ An investor-ready MVP shipped in 10 days for under $300, avoiding a larger upfro
           cat: ["cat <file> — print text files only"],
           grep: ["grep <term> — unified search (alias of search)"],
           search: [
-            "search <term> — unified search across selected cases, logs, and resume text",
+            "search <term> — unified search across selected cases, blogs, and resume text",
             "Cmd/Ctrl+F pre-fills the search prompt",
           ],
           selected_cases: [
@@ -1863,17 +1859,14 @@ An investor-ready MVP shipped in 10 days for under $300, avoiding a larger upfro
           whoami: ["compact profile card; alias: finger"],
           resume: ["open resume PDF"],
           ver: ["ver — show app version"],
-          blog: [
-            "blog list [--tag t] [--search q] — list posts",
-            "blog read <slug|title> — open a post",
-            "blog search <query> — ranked search",
-            "blog tags — show tag counts",
+          blogs: [
+            "blogs list [--tag t] [--search q] — show blogs and engineering notes",
+            "blogs read <slug|title> — open an entry",
+            "blogs search <query> — ranked search",
+            "blogs tags — show tag counts",
           ],
-          logs: [
-            "logs list — list log entries",
-            "logs read <slug|title> — read a log entry",
-            "logs search <query> — keyword search",
-          ],
+          blog: ["alias for blogs"],
+          logs: ["alias for blogs"],
           activity: [
             "activity — show a tree/timeline style overview of selected cases and focus areas",
           ],

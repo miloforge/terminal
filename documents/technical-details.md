@@ -19,7 +19,7 @@ This document dives into the runtime, command system, assets, and helpers that m
 ## Command system
 
 - `CommandRegistry` (`src/components/terminal/commandRegistry.ts:1`) stores handlers, descriptions, and subcommand suggestion callbacks. It normalizes names and exposes `suggest`/`suggestSubcommands` for autocomplete.
-- `registerDefaultCommands` in `src/components/terminal/defaultCommands.ts:1` defines the built-in portfolio commands: `contact`, `selected_cases`, `blog`, `logs`, `faq`, filesystem helpers (`ls`, `cat`, `download`, `verify`), offline controls, font display, resume download, and custom text blocks (`assumptions`, `philosophy`, etc.).
+- `registerDefaultCommands` in `src/components/terminal/defaultCommands.ts:1` defines the built-in portfolio commands: `contact`, `selected_cases`, `blogs`, `faq`, filesystem helpers (`ls`, `cat`, `download`, `verify`), offline controls, font display, resume download, and custom text blocks (`assumptions`, `philosophy`, etc.).
 - The default commands leverage the blog/log indexes, file manifest, history store, clipboard helpers, offline client, and font controller exposed via `RegisterDefaultsArgs`. Hooks such as `setLinesFromModel`, `executeCommand`, and `fontController` allow commands to push rich line segments, interact with overlays, and mutate prompt/output state.
 - Add new commands by registering them through `CommandRegistry.register`. You can borrow `LineSegment` helpers from `@types` and reuse UI primitives (command buttons, copy buttons, markdown blocks) to enrich the experience.
 
@@ -34,7 +34,7 @@ This document dives into the runtime, command system, assets, and helpers that m
 
 - Command history is retained locally via `src/components/terminal/historyStore.ts:1`. It tries IndexedDB first and falls back to an in-memory array; history is capped at 1,000 entries and synced whenever `appendHistory` runs.
 - Offline tooling lives in `src/utils/offlineClient.ts:1`. Commands call `getOfflineStatus`, `refreshOfflineResources`, and `disableOffline` to query/clear the service worker cache (`public/service-worker.js:1`) and related IndexedDB/localStorage state.
-- `src/utils/shareLink.ts:1` supports the `buildShareLink`/`parseShareCommandsFromLocation` flow, which lets the UI consume `?run=` query parameters to auto-execute whitelisted `blog read` and `logs read` commands.
+- `src/utils/shareLink.ts:1` supports the `buildShareLink`/`parseShareCommandsFromLocation` flow, which lets the UI consume `?run=` query parameters to auto-execute whitelisted `blogs read` commands. Legacy `blog read` and `logs read` links remain accepted.
 - Clipboard access, typing simulations, and greeting copy originate from `src/utils/index.ts:1` (which re-exports `clipboard.ts`, `greeting.ts`, and `typingSimulation.ts`). These helpers keep the terminal feel consistent without polluting the core controller.
 
 ## Constellation network simulator (for fun)

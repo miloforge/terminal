@@ -9,7 +9,7 @@ A single-page, terminal-style personal site built with React + Vite. Fork it, dr
 ## Customize your copy
 
 - **Commands & content:** Edit `src/components/terminal/defaultCommands.ts` to change text, links, or add/remove commands.
-- **Blogs/notes:** Replace markdown in `src/data/blogs` and `src/data/logs` (indexes live in the matching `*Index.ts` files).
+- **Blogs/notes:** Replace markdown in `src/data/blogs` and `src/data/logs`; both surfaces are exposed through the `blogs` terminal command.
 - **Downloads:** Put files in `public/files` and list them in `src/data/fileManifest.json`.
 - **Branding:** Tweak colors/typography in `src/global.css`. The landing intro lives in `src/hooks/useTerminalController.ts`.
 

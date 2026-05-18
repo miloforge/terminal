@@ -112,9 +112,9 @@ async function collectSearchEntries(): Promise<SurfaceEntry[]> {
     entries.push({
       source: "blog",
       title: entry.title,
-      location: "blog",
+      location: "blogs",
       lines: entry.lines,
-      readCommand: `blog read ${entry.slug}`,
+      readCommand: `blogs read ${entry.slug}`,
     });
   });
 
@@ -122,9 +122,9 @@ async function collectSearchEntries(): Promise<SurfaceEntry[]> {
     entries.push({
       source: "log",
       title: entry.title,
-      location: "log",
+      location: "blogs",
       lines: entry.lines,
-      readCommand: `logs read ${entry.slug}`,
+      readCommand: `blogs read ${entry.slug}`,
     });
   });
 
