@@ -828,7 +828,8 @@
     background: none;
     border: none;
     box-shadow: none;
-    animation: intro-avatar-float-position 4.8s ease-in-out infinite;
+    animation: intro-avatar-float-position 7s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+    will-change: transform;
   }
 
   .intro-start-line .t-avatarMessage::after {
@@ -840,13 +841,16 @@
   }
 
   .intro-start-line .t-avatarPhoto {
+    --intro-avatar-breathe-min: 0.905;
+    --intro-avatar-breathe-max: 1.095;
     width: 42px;
     height: 42px;
     aspect-ratio: auto;
     border-radius: 50%;
-    box-shadow: 0 11px 21px rgba(0, 0, 0, 0.3);
-    animation: intro-avatar-breathe-size 4.8s ease-in-out infinite;
-    will-change: width, height, box-shadow;
+    box-shadow: 0 14px 26px rgba(0, 0, 0, 0.34);
+    scale: var(--intro-avatar-breathe-min);
+    animation: intro-avatar-breathe-size 7s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+    will-change: transform, scale;
   }
 
   .intro-start-line .t-avatarContent {
@@ -856,26 +860,22 @@
   @keyframes intro-avatar-float-position {
     0%,
     100% {
-      top: 6px;
+      transform: translate3d(0, 4px, 0);
     }
 
     50% {
-      top: -4px;
+      transform: translate3d(0, -4px, 0);
     }
   }
 
   @keyframes intro-avatar-breathe-size {
     0%,
     100% {
-      box-shadow: 0 11px 21px rgba(0, 0, 0, 0.3);
-      height: 38px;
-      width: 38px;
+      scale: var(--intro-avatar-breathe-min);
     }
 
     50% {
-      box-shadow: 0 17px 30px rgba(0, 0, 0, 0.38);
-      height: 46px;
-      width: 46px;
+      scale: var(--intro-avatar-breathe-max);
     }
   }
 
@@ -1130,14 +1130,15 @@
     }
 
     .intro-start-line .t-avatarPhoto {
+      --intro-avatar-breathe-min: 0.9;
+      --intro-avatar-breathe-max: 1.05;
       width: 36px;
       height: 36px;
       box-shadow: 0 12px 22px rgba(0, 0, 0, 0.34);
-      transform: scale(0.82);
     }
 
     .intro-start-line .t-avatarPhoto:hover {
-      transform: scale(0.82) translateY(-1px);
+      transform: translateY(-1px);
       box-shadow: 0 14px 24px rgba(0, 0, 0, 0.36);
     }
 
