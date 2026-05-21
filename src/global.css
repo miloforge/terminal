@@ -993,6 +993,7 @@
   .t-faqSummary,
   .t-logSummary,
   .t-logTitle,
+  .t-logReadTime,
   .t-markdown,
   .t-markdownBody,
   .t-notice,
@@ -1005,7 +1006,8 @@
   }
 
   .t-faqItem.is-open .t-faqSummary,
-  .t-logDate,
+  .t-logReadTime,
+  .t-markdownDate,
   .t-markdownTitle,
   .t-markdownBody a,
   .t-logShare,
@@ -1358,19 +1360,34 @@
     text-align: left;
   }
 
-  .t-logDate {
+  .t-logReadTime {
     margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     font-family: var(--font-mono, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace);
     font-size: 12px;
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.4px;
-    text-transform: uppercase;
     white-space: nowrap;
     color: var(--muted);
   }
 
-  .t-eyeIcon {
+  .t-logReadTimeIcon {
     display: block;
+    flex: 0 0 auto;
+  }
+
+  .t-srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .t-logPanel {
@@ -2245,6 +2262,18 @@
     letter-spacing: 0.2px;
     color: var(--accent);
     color: color-mix(in srgb, var(--accent) 70%, var(--text) 30%);
+  }
+
+  .t-markdownDate {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 12px;
+    font-family: var(--font-mono, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.4px;
+    line-height: 1.3;
+    color: var(--muted);
   }
 
   .t-markdownBody h1,

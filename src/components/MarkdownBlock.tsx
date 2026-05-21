@@ -13,8 +13,48 @@ export function renderMarkdown(markdown: string): Promise<string> {
   return Promise.resolve(result).then((value) => value || "");
 }
 
+const WRITTEN_DATE_FORMATTER = new Intl.DateTimeFormat("en", {
+  month: "short",
+  day: "2-digit",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+function formatWrittenDate(date?: string): string | null {
+  if (!date) return null;
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date.trim());
+  if (!match) return date.trim() || null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (
+    !Number.isFinite(year) ||
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31
+  ) {
+    return date.trim();
+  }
+
+  const writtenAt = new Date(Date.UTC(year, month - 1, day));
+  if (
+    writtenAt.getUTCFullYear() !== year ||
+    writtenAt.getUTCMonth() !== month - 1 ||
+    writtenAt.getUTCDate() !== day
+  ) {
+    return date.trim();
+  }
+
+  return WRITTEN_DATE_FORMATTER.format(writtenAt).toUpperCase();
+}
+
 export function MarkdownBlock({ segment }: { segment: MarkdownSegment }) {
   const [html, setHtml] = useState<string>("");
+  const writtenDate =
+    segment.variant === "blog" ? formatWrittenDate(segment.date) : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -32,6 +72,11 @@ export function MarkdownBlock({ segment }: { segment: MarkdownSegment }) {
     >
       {segment.title ? (
         <h3 className="t-markdownTitle">{segment.title}</h3>
+      ) : null}
+      {writtenDate ? (
+        <div className="t-markdownDate" aria-label={`Written ${writtenDate}`}>
+          {writtenDate}
+        </div>
       ) : null}
       <div
         className="t-markdownBody"

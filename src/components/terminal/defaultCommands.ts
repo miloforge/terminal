@@ -438,6 +438,7 @@ type BlogSurfaceEntry = {
   slug: string;
   title: string;
   date?: string;
+  readingMinutes: number;
   tags: string[];
   summary?: string;
   body: string;
@@ -448,10 +449,16 @@ function toBlogSurfaceEntry(post: BlogPost): BlogSurfaceEntry {
     slug: post.slug,
     title: post.title,
     date: post.date,
+    readingMinutes: post.readingMinutes,
     tags: post.tags,
     summary: post.summary,
     body: post.body,
   };
+}
+
+function formatReadingTime(minutes: number): string {
+  const safeMinutes = Math.max(1, Math.round(minutes));
+  return `${safeMinutes} min read`;
 }
 
 function getBlogSurfaceEntries(): BlogSurfaceEntry[] {
@@ -505,6 +512,8 @@ function toBlogLogItem(entry: BlogSurfaceEntry, mode: "summary" | "full"): LogIt
   return {
     date: entry.date || "",
     note: entry.title,
+    readingMinutes: entry.readingMinutes,
+    readingTimeLabel: formatReadingTime(entry.readingMinutes),
     body:
       mode === "full"
         ? [entry.summary, entry.body].filter(Boolean).join("\n\n")
@@ -975,6 +984,7 @@ An investor-ready MVP shipped in 10 days for under $300, avoiding a larger upfro
             title: entry.title,
             markdown: [entry.summary, entry.body].filter(Boolean).join("\n\n"),
             variant: "blog",
+            date: entry.date,
           },
         ],
       ];

@@ -2,6 +2,7 @@ export type BlogPost = {
   slug: string;
   title: string;
   date?: string;
+  readingMinutes: number;
   tags: string[];
   summary?: string;
   body: string;
@@ -123,6 +124,15 @@ function tokenize(text: string): string[] {
     .filter(Boolean);
 }
 
+function estimateReadingMinutes(lines: string[]): number {
+  const wordCount = lines
+    .join(" ")
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean).length;
+
+  return Math.max(1, Math.ceil(wordCount / 200));
+}
+
 const blogMap = new Map<string, BlogPost>();
 const aliasMap = new Map<string, string>();
 const tagCounts = new Map<string, number>();
@@ -142,6 +152,7 @@ function indexOnce() {
       slug,
       title,
       date: meta.date,
+      readingMinutes: estimateReadingMinutes(plainLines),
       tags,
       summary: meta.summary,
       body,

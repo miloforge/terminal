@@ -3,7 +3,7 @@ import { MarkdownBlock } from "@components/MarkdownBlock";
 import { SparklesCore } from "@components/ui/sparkles";
 import { useTerminalTone } from "@hooks/useTerminalTone";
 import { copyToClipboard, buildShareLink } from "@utils";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Clock } from "lucide-react";
 import {
   CommandSegment,
   CopySegment,
@@ -59,28 +59,6 @@ function CopyIcon({ active }: { active: boolean }) {
     >
       <rect x="9" y="9" width="11" height="11" rx="2" />
       <rect x="4" y="4" width="11" height="11" rx="2" />
-    </svg>
-  );
-}
-
-function EyeIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      className="t-eyeIcon"
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
-      <circle cx="12" cy="12" r="3" />
-      {open ? <circle cx="12" cy="12" r="7" opacity="0" /> : null}
     </svg>
   );
 }
@@ -698,6 +676,13 @@ function LogAccordion({ items }: { items: LogSegment["items"] }) {
       {items.map((item, idx) => {
         const isOpen = openIndex === idx;
         const displayDate = formatMonthYear(item.date);
+        const summaryMeta = item.readingTimeLabel || displayDate;
+        const compactReadingTime =
+          item.readingMinutes === undefined ? null : `${item.readingMinutes}'`;
+        const contentKind =
+          item.markdownVariant === "blog" ? "blog post" : "entry";
+        const panelId = `log-panel-${item.slug || idx}`;
+        const summaryHelpId = `log-summary-help-${item.slug || idx}`;
         const shareCommand = item.slug && `blog read ${item.slug}`;
         const shareText =
           shareCommand && typeof window !== "undefined"
@@ -709,6 +694,10 @@ function LogAccordion({ items }: { items: LogSegment["items"] }) {
               type="button"
               className="t-logSummary"
               aria-expanded={isOpen}
+              aria-controls={panelId}
+              aria-describedby={summaryHelpId}
+              aria-label={`${isOpen ? "Collapse" : "Open"} ${contentKind}: ${item.note}${summaryMeta ? `. ${summaryMeta}.` : ""} This row is clickable.`}
+              data-clickable-row="true"
               onClick={() => {
                 if (isOpen) {
                   setOpenIndex(null);
@@ -723,11 +712,26 @@ function LogAccordion({ items }: { items: LogSegment["items"] }) {
                 ▸
               </span>
               <span className="t-logTitle">{item.note}</span>
-              <span className="t-logDate">{displayDate}</span>
-              {item.body ? <EyeIcon open={isOpen} /> : null}
+              {summaryMeta ? (
+                <span className="t-logReadTime" aria-hidden="true">
+                  {compactReadingTime || summaryMeta}
+                  {compactReadingTime ? (
+                    <Clock
+                      className="t-logReadTimeIcon"
+                      size={15}
+                      strokeWidth={2.15}
+                    />
+                  ) : null}
+                </span>
+              ) : null}
+              <span id={summaryHelpId} className="t-srOnly">
+                Clickable row: press Enter or Space to{" "}
+                {isOpen ? "collapse" : "open"} this {contentKind}.
+              </span>
             </button>
 
             <div
+              id={panelId}
               className="t-logPanel"
               style={{
                 maxHeight: isOpen ? `${panelHeights[idx] ?? 0}px` : "0px",
@@ -745,6 +749,7 @@ function LogAccordion({ items }: { items: LogSegment["items"] }) {
                       type: "markdown",
                       markdown: item.body,
                       variant: item.markdownVariant,
+                      date: item.date,
                     }}
                   />
                 ) : (

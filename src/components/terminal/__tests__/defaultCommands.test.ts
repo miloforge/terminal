@@ -189,6 +189,8 @@ describe("default commands", () => {
       items: Array<{
         slug?: string;
         note: string;
+        readingMinutes?: number;
+        readingTimeLabel?: string;
         body?: string;
         markdownVariant?: string;
       }>;
@@ -199,6 +201,10 @@ describe("default commands", () => {
       indexedBlogs.map((post) => post.slug).sort(),
     );
     expect(logSeg?.items.every((item) => item.note && item.body)).toBe(true);
+    expect(
+      logSeg?.items.every((item) => /^\d+ min read$/.test(item.readingTimeLabel || "")),
+    ).toBe(true);
+    expect(logSeg?.items.every((item) => (item.readingMinutes || 0) >= 1)).toBe(true);
     expect(logSeg?.items.every((item) => item.markdownVariant === "blog")).toBe(true);
 
     const post =
@@ -215,10 +221,12 @@ describe("default commands", () => {
       type: "markdown";
       title?: string;
       markdown: string;
+      date?: string;
     }>(readLines, "markdown");
     expect(markdownSeg).toMatchObject({
       title: post.title,
       markdown: [post.summary, post.body].filter(Boolean).join("\n\n"),
+      date: post.date,
     });
   });
 

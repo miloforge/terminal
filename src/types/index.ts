@@ -98,6 +98,8 @@ export type FaqSegment = {
 export type LogItem = {
   date: string;
   note: string;
+  readingMinutes?: number;
+  readingTimeLabel?: string;
   body?: string;
   slug?: string;
   markdownVariant?: "blog";
@@ -146,6 +148,7 @@ export type MarkdownSegment = {
   title?: string;
   markdown: string;
   variant?: "blog";
+  date?: string;
 };
 
 export type SearchHit = {
