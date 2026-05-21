@@ -9,15 +9,48 @@ import {
 import { TerminalModel } from "../terminalModel";
 import { findFileByName } from "../../../data/files";
 import type { TerminalProps } from "@types";
+import { blogIndex } from "../../../data/blogIndex";
+import { searchStore } from "../../../stores/searchStore";
 
 const noop = () => {};
-const blogFileCount = Object.keys(
-  import.meta.glob("../../../data/blogs/*.md", {
-    eager: true,
-    import: "default",
-    query: "?raw",
-  }),
-).length;
+const indexedBlogs = blogIndex.getAll();
+
+function normalizeOutput(output: unknown): unknown[] {
+  return Array.isArray(output) ? output : [output];
+}
+
+function findSegment<T extends { type: string }>(
+  lines: unknown[],
+  type: T["type"],
+): T | undefined {
+  return lines
+    .flatMap((line) => (Array.isArray(line) ? line : []))
+    .find((seg): seg is T => {
+      return (
+        typeof seg === "object" &&
+        seg !== null &&
+        "type" in seg &&
+        (seg as T).type === type
+      );
+    });
+}
+
+function firstSearchableBlogTerm(): { slug: string; query: string } {
+  const post = indexedBlogs.find((entry) =>
+    [entry.title, entry.summary, ...entry.plainLines]
+      .filter((line): line is string => Boolean(line))
+      .some((line) => /\b[a-z0-9]{4,}\b/i.test(line)),
+  );
+  if (!post) throw new Error("expected at least one searchable blog post");
+
+  const text = [post.title, post.summary, ...post.plainLines]
+    .filter((line): line is string => Boolean(line))
+    .join(" ");
+  const query = text.match(/\b[a-z0-9]{4,}\b/i)?.[0];
+  if (!query) throw new Error(`expected searchable text for blog ${post.slug}`);
+
+  return { slug: post.slug, query };
+}
 
 function buildRegistry(props: TerminalProps = {}) {
   const registry = new CommandRegistry();
@@ -35,6 +68,8 @@ describe("default commands", () => {
   beforeEach(() => {
     // Make sure fetch exists for command handlers.
     globalThis.fetch = vi.fn(async () => new Response("sample text line\nkickoff line"));
+    searchStore.clear();
+    searchStore.close();
   });
 
   afterEach(() => {
@@ -148,57 +183,71 @@ describe("default commands", () => {
       model,
       registry,
     });
-    const listLines = Array.isArray(listOut) ? listOut : [listOut];
-    const listSummary = JSON.stringify(listLines);
-    expect(listSummary).toContain("Why I Choose to Work as a Solo Contractor");
-    expect(listSummary).toContain("Improved Tab autocompletion");
-    expect(listSummary).toContain("Building an MVP");
-    expect(listSummary).toContain("Borrow or Take?");
-    expect(listSummary).toContain("\"type\":\"logs\"");
-    const logSeg = listLines
-      .flat()
-      .find((seg) => typeof seg === "object" && "type" in seg && seg.type === "logs") as any;
-    expect(logSeg.items).toHaveLength(blogFileCount);
+    const listLines = normalizeOutput(listOut);
+    const logSeg = findSegment<{
+      type: "logs";
+      items: Array<{ slug?: string; note: string; body?: string }>;
+    }>(listLines, "logs");
+    expect(logSeg).toBeTruthy();
+    expect(logSeg?.items).toHaveLength(indexedBlogs.length);
+    expect(logSeg?.items.map((item) => item.slug).sort()).toEqual(
+      indexedBlogs.map((post) => post.slug).sort(),
+    );
+    expect(logSeg?.items.every((item) => item.note && item.body)).toBe(true);
 
+    const post =
+      indexedBlogs.find((entry) => entry.slug === "premature-scaling") ??
+      indexedBlogs[0];
     const readOut = await blogHandler?.({
-      args: ["read", "solo-contractor"],
-      raw: "blog read solo-contractor",
+      args: ["read", post.slug],
+      raw: `blog read ${post.slug}`,
       model,
       registry,
     });
-    const readLines = Array.isArray(readOut) ? readOut : [readOut];
-    const markdownLine = readLines.find(
-      (line): line is TerminalLine =>
-        Array.isArray(line) && line.some((seg) => (seg as any).type === "markdown")
-    );
-    expect(markdownLine).toBeTruthy();
-    expect(markdownLine?.[0]).toMatchObject({ markdown: expect.stringContaining("Why autonomy matters") });
+    const readLines = normalizeOutput(readOut);
+    const markdownSeg = findSegment<{
+      type: "markdown";
+      title?: string;
+      markdown: string;
+    }>(readLines, "markdown");
+    expect(markdownSeg).toMatchObject({
+      title: post.title,
+      markdown: [post.summary, post.body].filter(Boolean).join("\n\n"),
+    });
   });
 
   it("searches consolidated blogs and includes them in grep", async () => {
     const { registry, model } = buildRegistry();
     const blogHandler = registry.get("blog")?.handler;
     const grepHandler = registry.get("grep")?.handler;
+    const { slug, query } = firstSearchableBlogTerm();
 
     const searchOut = await blogHandler?.({
-      args: ["search", "kickoff"],
-      raw: "blog search kickoff",
+      args: ["search", query],
+      raw: `blog search ${query}`,
       model,
       registry,
     });
-    const searchLines = Array.isArray(searchOut) ? searchOut : [searchOut];
-    expect(searchLines.join("\n")).toContain("client-question");
+    const searchLines = normalizeOutput(searchOut);
+    expect(searchLines.join("\n")).toContain(slug);
 
     const grepOut = await grepHandler?.({
-      args: ["kickoff"],
-      raw: "grep kickoff",
+      args: [query],
+      raw: `grep ${query}`,
       model,
       registry,
     });
-    const grepLines = Array.isArray(grepOut) ? grepOut : [grepOut];
+    const grepLines = normalizeOutput(grepOut);
     const grepSummary = grepLines.join("\n");
     expect(grepSummary).toContain("search modal open");
-    expect(grepSummary).toContain("kickoff");
+    expect(grepSummary).toContain(query);
+    expect(
+      searchStore
+        .getState()
+        .hits.some(
+          (hit) => hit.source === "blog" && hit.readCommand === `blog read ${slug}`,
+        ),
+    ).toBe(true);
   });
 
   it("includes work case studies in grep results", async () => {
@@ -257,26 +306,32 @@ describe("default commands", () => {
       model,
       registry,
     });
-    const listLines = Array.isArray(listOut) ? listOut : [listOut];
-    const logsSummary = JSON.stringify(listLines);
-    expect(logsSummary).toContain("70% fewer Gen AI tokens in a hot path");
-    expect(logsSummary).toContain("Improved Tab autocompletion");
-    expect(logsSummary).toContain("Building an MVP");
+    const listLines = normalizeOutput(listOut);
+    const logsSegment = findSegment<{
+      type: "logs";
+      items: Array<{ slug?: string }>;
+    }>(listLines, "logs");
+    expect(logsSegment?.items).toHaveLength(indexedBlogs.length);
 
+    const post =
+      indexedBlogs.find((entry) => entry.slug === "automation-risk") ??
+      indexedBlogs[0];
     const readOut = await blogHandler?.({
-      args: ["read", "2025-01-21-tab"],
-      raw: "blog read 2025-01-21-tab",
+      args: ["read", post.slug],
+      raw: `blog read ${post.slug}`,
       model,
       registry,
     });
-    const readLines = Array.isArray(readOut) ? readOut : [readOut];
-    const logLine = readLines.find(
-      (line): line is TerminalLine =>
-        Array.isArray(line) && line.some((seg) => (seg as any).type === "logs")
+    const readLines = normalizeOutput(readOut);
+    const logSeg = findSegment<{ type: "logs"; items: Array<{ slug?: string; body?: string }> }>(
+      readLines,
+      "logs",
     );
-    expect(logLine).toBeTruthy();
-    const logSeg = logLine?.find((seg) => (seg as any).type === "logs") as any;
-    expect(logSeg.items[0].body).toContain("Tab now suggests");
+    expect(logSeg?.items).toHaveLength(1);
+    expect(logSeg?.items[0]).toMatchObject({
+      slug: post.slug,
+      body: [post.summary, post.body].filter(Boolean).join("\n\n"),
+    });
   });
 
   it("prints and clears command history", async () => {

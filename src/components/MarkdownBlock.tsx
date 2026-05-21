@@ -5,16 +5,20 @@ import { MarkdownSegment } from "@types";
 // Centralized markdown renderer used for blog content and log bodies.
 marked.setOptions({
   gfm: true,
-  breaks: true,
+  breaks: false,
 });
+
+export function renderMarkdown(markdown: string): Promise<string> {
+  const result = marked.parse(markdown);
+  return Promise.resolve(result).then((value) => value || "");
+}
 
 export function MarkdownBlock({ segment }: { segment: MarkdownSegment }) {
   const [html, setHtml] = useState<string>("");
 
   useEffect(() => {
     let cancelled = false;
-    const result = marked.parse(segment.markdown);
-    Promise.resolve(result).then((value) => {
+    renderMarkdown(segment.markdown).then((value) => {
       if (!cancelled) setHtml(value || "");
     });
     return () => {

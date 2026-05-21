@@ -2164,7 +2164,14 @@
   .t-markdown {
     padding: 14px 16px;
     border-radius: 12px;
-    line-height: 1.55;
+    line-height: 1.58;
+    white-space: normal;
+  }
+
+  .t-markdownBody {
+    max-width: 72ch;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .t-markdownTitle {
@@ -2182,7 +2189,7 @@
   .t-markdownBody h4,
   .t-markdownBody h5,
   .t-markdownBody h6 {
-    margin: 10px 0 6px;
+    margin: 1.45em 0 0.5em;
     font-weight: 700;
     color: var(--accent);
     color: color-mix(in srgb, var(--accent) 70%, var(--text) 30%);
@@ -2215,7 +2222,7 @@
   }
 
   .t-markdownBody p {
-    margin: 8px 0;
+    margin: 0 0 0.95em;
   }
 
   .t-markdownBody a {
@@ -2237,7 +2244,7 @@
 
   .t-markdownBody ul,
   .t-markdownBody ol {
-    margin: 8px 0 8px 18px;
+    margin: 0.85em 0 1em 18px;
     padding: 0 0 0 12px;
     list-style-position: outside;
   }
@@ -2251,7 +2258,23 @@
   }
 
   .t-markdownBody li {
-    margin: 6px 0;
+    margin: 0.35em 0;
+  }
+
+  .t-markdownBody img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 1.25em 0;
+    border-radius: 8px;
+  }
+
+  .t-markdownBody > :first-child {
+    margin-top: 0;
+  }
+
+  .t-markdownBody > :last-child {
+    margin-bottom: 0;
   }
 
   .t-markdownBody code {
