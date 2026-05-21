@@ -510,6 +510,7 @@ function toBlogLogItem(entry: BlogSurfaceEntry, mode: "summary" | "full"): LogIt
         ? [entry.summary, entry.body].filter(Boolean).join("\n\n")
         : entry.summary,
     slug: entry.slug,
+    markdownVariant: "blog",
   };
 }
 
@@ -973,6 +974,7 @@ An investor-ready MVP shipped in 10 days for under $300, avoiding a larger upfro
             type: "markdown",
             title: entry.title,
             markdown: [entry.summary, entry.body].filter(Boolean).join("\n\n"),
+            variant: "blog",
           },
         ],
       ];

@@ -100,6 +100,7 @@ export type LogItem = {
   note: string;
   body?: string;
   slug?: string;
+  markdownVariant?: "blog";
 };
 
 export type LogSegment = {
@@ -144,6 +145,7 @@ export type MarkdownSegment = {
   type: "markdown";
   title?: string;
   markdown: string;
+  variant?: "blog";
 };
 
 export type SearchHit = {

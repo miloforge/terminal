@@ -27,8 +27,12 @@ export function MarkdownBlock({ segment }: { segment: MarkdownSegment }) {
   }, [segment.markdown]);
 
   return (
-    <div className="t-markdown">
-      {segment.title ? <h3 className="t-markdownTitle">{segment.title}</h3> : null}
+    <div
+      className={`t-markdown${segment.variant === "blog" ? " t-markdown--blog" : ""}`}
+    >
+      {segment.title ? (
+        <h3 className="t-markdownTitle">{segment.title}</h3>
+      ) : null}
       <div
         className="t-markdownBody"
         // content originates from local markdown files we author

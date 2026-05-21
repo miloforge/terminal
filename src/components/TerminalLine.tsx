@@ -3,6 +3,7 @@ import { MarkdownBlock } from "@components/MarkdownBlock";
 import { SparklesCore } from "@components/ui/sparkles";
 import { useTerminalTone } from "@hooks/useTerminalTone";
 import { copyToClipboard, buildShareLink } from "@utils";
+import { ArrowUp } from "lucide-react";
 import {
   CommandSegment,
   CopySegment,
@@ -655,6 +656,8 @@ function LogAccordion({ items }: { items: LogSegment["items"] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const panelInnerRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [panelHeights, setPanelHeights] = useState<Record<number, number>>({});
+  const openItem = openIndex === null ? null : items[openIndex];
+  const showCollapseButton = openItem?.markdownVariant === "blog";
 
   const syncPanelHeight = (idx: number) => {
     const panelInner = panelInnerRefs.current[idx];
@@ -741,6 +744,7 @@ function LogAccordion({ items }: { items: LogSegment["items"] }) {
                     segment={{
                       type: "markdown",
                       markdown: item.body,
+                      variant: item.markdownVariant,
                     }}
                   />
                 ) : (
@@ -765,6 +769,17 @@ function LogAccordion({ items }: { items: LogSegment["items"] }) {
           </div>
         );
       })}
+      {showCollapseButton ? (
+        <button
+          type="button"
+          className="t-logCollapseFloating"
+          aria-label="Collapse open blog post"
+          title="Collapse open blog post"
+          onClick={() => setOpenIndex(null)}
+        >
+          <ArrowUp size={20} strokeWidth={2.25} aria-hidden="true" />
+        </button>
+      ) : null}
     </div>
   );
 }

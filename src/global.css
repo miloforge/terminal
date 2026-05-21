@@ -1414,6 +1414,57 @@
     transform: translateY(1px);
   }
 
+  .t-logCollapseFloating {
+    all: unset;
+    box-sizing: border-box;
+    position: fixed;
+    left: 50%;
+    bottom: 84px;
+    z-index: calc(var(--z-toolbar, 20) + 1);
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 56%, rgba(255, 255, 255, 0.42) 44%);
+    background: color-mix(in srgb, var(--surface) 84%, var(--accent) 16%);
+    color: var(--text);
+    box-shadow:
+      0 10px 26px rgba(0, 0, 0, 0.24),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    pointer-events: auto;
+    transform: translateX(-50%);
+    backdrop-filter: blur(8px) saturate(130%);
+    -webkit-backdrop-filter: blur(8px) saturate(130%);
+    transition:
+      transform 180ms ease,
+      background-color 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .t-logCollapseFloating:hover,
+  .t-logCollapseFloating:focus-visible {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--surface) 72%, var(--accent) 28%);
+    box-shadow:
+      0 14px 30px rgba(0, 0, 0, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    outline: none;
+    transform: translateX(-50%) translateY(-2px);
+  }
+
+  .t-logCollapseFloating:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--accent) 64%, rgba(255, 255, 255, 0.4));
+    outline-offset: 4px;
+  }
+
+  .t-logCollapseFloating:active {
+    transform: translateX(-50%) translateY(1px);
+  }
+
   .t-searchHits {
     display: flex;
     flex-direction: column;
@@ -2159,6 +2210,12 @@
       width: min(80%, 420px);
       max-width: 80vw;
     }
+
+    .t-logCollapseFloating {
+      bottom: 72px;
+      width: 40px;
+      height: 40px;
+    }
   }
 
   .t-markdown {
@@ -2172,6 +2229,13 @@
     max-width: 72ch;
     white-space: normal;
     overflow-wrap: anywhere;
+  }
+
+  .t-markdown--blog .t-markdownBody {
+    font-family: Georgia, Cambria, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.68;
+    max-width: 68ch;
   }
 
   .t-markdownTitle {
@@ -2242,6 +2306,19 @@
     font-style: italic;
   }
 
+  .t-markdownBody blockquote {
+    margin: 1.1em 0 1.25em;
+    padding: 0.95em 1em 0.95em 1.15em;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    background: rgba(255, 255, 255, 0.055);
+    color: color-mix(in srgb, var(--text) 88%, var(--accent) 12%);
+  }
+
+  .t-markdownBody blockquote p {
+    margin: 0;
+  }
+
   .t-markdownBody ul,
   .t-markdownBody ol {
     margin: 0.85em 0 1em 18px;
@@ -2269,11 +2346,11 @@
     border-radius: 8px;
   }
 
-  .t-markdownBody > :first-child {
+  .t-markdownBody> :first-child {
     margin-top: 0;
   }
 
-  .t-markdownBody > :last-child {
+  .t-markdownBody> :last-child {
     margin-bottom: 0;
   }
 

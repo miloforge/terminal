@@ -186,7 +186,12 @@ describe("default commands", () => {
     const listLines = normalizeOutput(listOut);
     const logSeg = findSegment<{
       type: "logs";
-      items: Array<{ slug?: string; note: string; body?: string }>;
+      items: Array<{
+        slug?: string;
+        note: string;
+        body?: string;
+        markdownVariant?: string;
+      }>;
     }>(listLines, "logs");
     expect(logSeg).toBeTruthy();
     expect(logSeg?.items).toHaveLength(indexedBlogs.length);
@@ -194,6 +199,7 @@ describe("default commands", () => {
       indexedBlogs.map((post) => post.slug).sort(),
     );
     expect(logSeg?.items.every((item) => item.note && item.body)).toBe(true);
+    expect(logSeg?.items.every((item) => item.markdownVariant === "blog")).toBe(true);
 
     const post =
       indexedBlogs.find((entry) => entry.slug === "premature-scaling") ??
