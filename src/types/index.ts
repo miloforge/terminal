@@ -317,9 +317,10 @@ export type TelemetryEventPayload = {
 
 export type TelemetryInput =
   | string
-  | Omit<TelemetryEventPayload, "timestamp" | "level"> & {
+  | (Omit<TelemetryEventPayload, "timestamp" | "level" | "error"> & {
       level?: TelemetryLevel;
-    };
+      error?: unknown;
+    });
 
 export type OfflineStatus = {
   supported: boolean;

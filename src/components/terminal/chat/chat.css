@@ -208,13 +208,75 @@
   font-size: 14px;
 }
 
-.chat-tone-option-helper {
-  font-size: 12px;
-  color: var(--muted, rgba(234, 241, 251, 0.65));
-}
-
 .chat-window.is-maximized .chat-body {
   max-height: none;
+}
+
+.chat-startOptions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex: 1 1 auto;
+  gap: 16px;
+  min-height: 0;
+  width: 100%;
+}
+
+.chat-startOptions .chat-tone {
+  width: 100%;
+}
+
+.chat-startOptions .chat-suggestions {
+  width: 100%;
+  min-width: 0;
+}
+
+.chat-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-suggestions-title {
+  color: var(--muted, rgba(234, 241, 251, 0.8));
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+
+.chat-suggestionList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.chat-suggestionButton {
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent, #8dd0ff) 34%, var(--border, rgba(255, 255, 255, 0.16)));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--card, rgba(255, 255, 255, 0.06)) 78%, transparent);
+  color: var(--text, #f4f6fb);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: left;
+  transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+.chat-suggestionButton:hover:not(:disabled),
+.chat-suggestionButton:focus-visible:not(:disabled) {
+  background: color-mix(in srgb, var(--accent, #8dd0ff) 16%, var(--card, rgba(255, 255, 255, 0.08)));
+  border-color: color-mix(in srgb, var(--accent, #8dd0ff) 72%, var(--border, rgba(141, 208, 255, 0.28)));
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.chat-suggestionButton:disabled {
+  cursor: wait;
+  opacity: 0.62;
 }
 
 .chat-bubble {
@@ -465,11 +527,16 @@
     left: 10px;
     right: 10px;
     top: 76px;
+    bottom: 10px;
     max-width: none;
   }
 
+  .chat-window {
+    height: 100%;
+  }
+
   .chat-body {
-    max-height: 54vh;
+    max-height: none;
   }
 
   .chat-bubble {
@@ -482,5 +549,41 @@
 
   .chat-tone-option {
     min-width: 100%;
+  }
+
+  .chat-startOptions {
+    gap: 10px;
+  }
+
+  .chat-startOptions .chat-tone {
+    width: 100%;
+  }
+
+  .chat-tone-title,
+  .chat-suggestions-title {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+  }
+
+  .chat-tone-options {
+    gap: 7px;
+  }
+
+  .chat-tone-option {
+    padding: 7px 8px;
+  }
+
+  .chat-tone-option-label {
+    font-size: 12px;
+  }
+
+  .chat-suggestionList {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .chat-suggestionButton {
+    min-height: 34px;
+    padding: 7px 10px;
   }
 }

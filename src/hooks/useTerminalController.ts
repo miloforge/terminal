@@ -29,6 +29,12 @@ import {
 } from "@utils";
 import { useTelemetry } from "@hooks/useTelemetry";
 
+const isLineSegment = (value: unknown): value is LineSegment =>
+  typeof value === "object" &&
+  value !== null &&
+  "type" in value &&
+  typeof (value as { type?: unknown }).type === "string";
+
 export function useTerminalController(props: TerminalProps): ControllerReturn {
   const typeSfxRef = useRef<ReturnType<typeof createTypeSfx> | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -95,7 +101,11 @@ export function useTerminalController(props: TerminalProps): ControllerReturn {
   const normalizeCommandOutput = useCallback(
     (value: CommandOutput): TerminalLineInput[] => {
       if (!value) return [];
-      return Array.isArray(value) ? value : [value];
+      if (!Array.isArray(value)) return [value];
+      if (!value.length) return [];
+      return isLineSegment(value[0])
+        ? [value as TerminalLineInput]
+        : (value as TerminalLineInput[]);
     },
     [],
   );
@@ -344,17 +354,30 @@ export function useTerminalController(props: TerminalProps): ControllerReturn {
       type: "markdown",
       markdown: `
 <div class="intro-hero">
-  <div class="intro-headline">I Build Full-Stack Systems That Stay Predictable After the First Version Ships.</div>
-  <div class="intro-subline font-mono">Ambiguous ideas are easy to prototype and hard to operate. I turn them into:</div>
-    <div class="intro-proofLabel"></div>
+  <div class="intro-headline">I turn unclear software problems into systems teams can trust.</div>
+  <div class="intro-subline font-mono">From product idea to backend, infrastructure, integrations, security boundaries, and production reliability, I help teams ship software that is useful on day one and still understandable six months later.</div>
+    <div class="intro-proofLabel">Start here</div>
     <div class="intro-proofList">
-       <div><span class="intro-proofMetric">⯎ secure, maintainable software systems</span></div>
-       <div><span class="intro-proofMetric">⯎ explicit workflows</span></div>
-       <div><span class="intro-proofMetric">⯎ clear failure boundaries</span></div>
-       <div><span class="intro-proofMetric">⯎ observable behavior</span></div>
-       <div><span class="intro-proofMetric">⯎ an architecture that can handle growth</span></div>
-       <div><span class="intro-proofMetric">⯎ Incident Readiness</span></div>
-     </div>
+    <details><summary>When to bring me in</summary>
+      <div><span class="intro-proofMetric">⯎ You have an idea but not a clear technical plan.</span></div>
+      <div><span class="intro-proofMetric">⯎ Your product works, but the system is getting fragile.</span></div>
+      <div><span class="intro-proofMetric">⯎ You need someone who can move across frontend, backend, infrastructure, security, and operations.</span></div>
+      <div><span class="intro-proofMetric">⯎ You are adding AI, automation, Web3, payments, or external integrations where mistakes become expensive.</span></div>
+    </details>
+    <details><summary>What I actually do</summary>
+      <div><span class="intro-proofMetric">⯎ Turn ambiguous needs into scoped, shippable execution plans.</span></div>
+      <div><span class="intro-proofMetric">⯎ Build frontend, backend, integrations, and operational paths together.</span></div>
+      <div><span class="intro-proofMetric">⯎ Make failure boundaries, observability, and recovery behavior explicit.</span></div>
+    </details>
+    <details><summary>How I work</summary>
+      <div><span class="intro-proofMetric">⯎ Start with the smallest useful slice and keep rollback simple.</span></div>
+      <div><span class="intro-proofMetric">⯎ Surface risks early instead of hiding them behind polish.</span></div>
+      <div><span class="intro-proofMetric">⯎ Leave behind tests, docs, and inspectable state where correctness matters.</span></div>
+    </details>
+    <details><summary>Proof</summary>
+      <div><span class="intro-proofMetric">⯎ Selected cases show cost control, reliability under load, and security triage.</span></div>
+      <div><span class="intro-proofMetric">⯎ Blog posts document failure modes, invariants, containment, and recovery.</span></div>
+    </details>
   </div>
 </div>
       `.trim(),
@@ -474,7 +497,10 @@ export function useTerminalController(props: TerminalProps): ControllerReturn {
           .join("");
       };
 
-      const sliceSegment = (segment: LineSegment, remaining: number) => {
+      const sliceSegment = (
+        segment: LineSegment,
+        remaining: number,
+      ): [LineSegment | null, number] => {
         switch (segment.type) {
           case "text": {
             const text = segment.text.slice(0, remaining);

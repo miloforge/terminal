@@ -17,6 +17,26 @@ import { useChatStore } from "@stores/chatStore";
 import { getChatActions, getChatDisplayContent } from "./chatActions";
 import "./chat.css";
 
+const SUGGESTED_PROMPTS = [
+  "Can you help with my software idea?",
+  "What kind of work are you best suited for?",
+  "Show me proof of reliability/security thinking.",
+  "Can you work on AI/Web3/full-stack systems?",
+  "How should I contact you?",
+  "What work do you avoid taking on?",
+];
+
+const TONE_PRESETS = [
+  {
+    key: "technical" as const,
+    label: "Technical",
+  },
+  {
+    key: "non-technical" as const,
+    label: "Plain English",
+  },
+];
+
 type ChatDockProps = {
   onBookCall?: () => void;
   contactEmail?: string;
@@ -75,8 +95,12 @@ export function ChatDock({
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const activePointerRef = useRef<number | null>(null);
+  const suggestedPromptSendingRef = useRef(false);
 
-  const focusInput = () => requestAnimationFrame(() => inputRef.current?.focus());
+  const focusInput = useCallback(
+    () => requestAnimationFrame(() => inputRef.current?.focus()),
+    [],
+  );
 
   useEffect(() => {
     if (!isOpen || isMinimized) return;
@@ -123,29 +147,11 @@ export function ChatDock({
 
   const showTypingIndicator = loading && !hasStreamingChunk;
 
-  const tonePresets = useMemo(
-    () => [
-      {
-        key: "technical" as const,
-        label: "Engineer",
-        helper: "Concise, Technical",
-      },
-      {
-        key: "non-technical" as const,
-        label: "Non-Engineer",
-        helper: "Business language",
-      },
-    ],
-    [],
-  );
-
   const handleTonePreset = useCallback(
     (presetKey: "technical" | "non-technical") => {
-      const preset = tonePresets.find((p) => p.key === presetKey);
-      if (!preset) return;
-      setTone(preset.key);
+      setTone(presetKey);
     },
-    [setTone, tonePresets],
+    [setTone],
   );
 
   const resetDragState = () => {
@@ -195,13 +201,25 @@ export function ChatDock({
   };
 
   const showToneSelector = !messages.some((message) => message.role === "user");
-  console.log("showToneSelector", showToneSelector)
+
+  const handleSuggestedPrompt = useCallback(
+    async (prompt: string) => {
+      if (loading || suggestedPromptSendingRef.current) return;
+      suggestedPromptSendingRef.current = true;
+      try {
+        await sendMessage(prompt);
+      } finally {
+        suggestedPromptSendingRef.current = false;
+        focusInput();
+      }
+    },
+    [focusInput, loading, sendMessage],
+  );
 
   const renderedMessages = useMemo(() => {
     const nodes: React.ReactNode[] = [];
-    let toneInserted = false;
 
-    messages.forEach((message, index) => {
+    messages.forEach((message) => {
       const roleClass =
         message.role === "user"
           ? "chat-bubble user"
@@ -277,58 +295,81 @@ export function ChatDock({
       );
     });
 
-    if (
-      !toneInserted &&
-      showToneSelector
-    ) {
+    if (showToneSelector) {
       nodes.push(
         <div
-          key="chat-tone-selector"
-          className="chat-tone"
-          aria-label="Tone selector"
+          key="chat-start-options"
+          className="chat-startOptions"
         >
-          <span id="chat-tone-label" className="chat-tone-title">
-            Select Your Desired Tone
-          </span>
           <div
-            className="chat-tone-options"
-            role="radiogroup"
-            aria-labelledby="chat-tone-label"
+            className="chat-tone"
+            aria-label="Tone selector"
           >
-            {tonePresets.map((preset) => (
-              <label
-                key={preset.key}
-                className={`chat-tone-option${tone === preset.key ? " is-active" : ""}`}
-              >
-                <input
-                  type="radio"
-                  name="chat-tone"
-                  value={preset.key}
-                  checked={tone === preset.key}
-                  onChange={() => handleTonePreset(preset.key)}
-                />
-                <span className="chat-tone-radio" aria-hidden="true" />
-                <div className="chat-tone-text">
-                  <span className="chat-tone-option-label">{preset.label}</span>
-                  <span className="chat-tone-option-helper">{preset.helper}</span>
-                </div>
-              </label>
-            ))}
+            <span id="chat-tone-label" className="chat-tone-title">
+              Response style
+            </span>
+            <div
+              className="chat-tone-options"
+              role="radiogroup"
+              aria-labelledby="chat-tone-label"
+            >
+              {TONE_PRESETS.map((preset) => (
+                <label
+                  key={preset.key}
+                  className={`chat-tone-option${tone === preset.key ? " is-active" : ""}`}
+                >
+                  <input
+                    type="radio"
+                    name="chat-tone"
+                    value={preset.key}
+                    checked={tone === preset.key}
+                    onChange={() => handleTonePreset(preset.key)}
+                  />
+                  <span className="chat-tone-radio" aria-hidden="true" />
+                  <div className="chat-tone-text">
+                    <span className="chat-tone-option-label">{preset.label}</span>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div
+            className="chat-suggestions"
+            aria-labelledby="chat-suggestions-label"
+          >
+            <span id="chat-suggestions-label" className="chat-suggestions-title">
+              Suggested prompts
+            </span>
+            <div className="chat-suggestionList">
+              {SUGGESTED_PROMPTS.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  className="chat-suggestionButton"
+                  onClick={() => void handleSuggestedPrompt(prompt)}
+                  disabled={loading}
+                  aria-label={`Send suggested question: ${prompt}`}
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
           </div>
         </div>,
       );
-      toneInserted = true;
     }
 
     return nodes;
   }, [
-    messages,
-    showToneSelector,
-    tone,
-    tonePresets,
+    handleSuggestedPrompt,
     handleTonePreset,
+    loading,
+    messages,
     onBookCall,
     contactEmail,
+    showToneSelector,
+    tone,
   ]);
 
   const send = async () => {
@@ -432,7 +473,7 @@ export function ChatDock({
               <textarea
                 ref={inputRef}
                 className="chat-input"
-                placeholder="Ask about Milad"
+                placeholder="Describe your need"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}

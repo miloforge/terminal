@@ -925,7 +925,7 @@
   }
 
   .intro-start-line .intro-proofLabel {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.26px;
     text-transform: uppercase;
     color: var(--muted);
@@ -937,6 +937,23 @@
     gap: 7px;
     margin-left: -55px;
     max-width: 520px;
+  }
+
+  .intro-start-line .intro-proofList details {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+  }
+
+  .intro-start-line .intro-proofList summary {
+    cursor: pointer;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .intro-start-line .intro-proofList details>div {
+    margin-top: 7px;
   }
 
   .intro-start-line .intro-proofList>div {

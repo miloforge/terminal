@@ -6,6 +6,14 @@ import {
   TelemetryInput,
 } from "@types";
 
+type TelemetryDetails = Omit<
+  TelemetryEventPayload,
+  "timestamp" | "level" | "error"
+> & {
+  level?: TelemetryEventPayload["level"];
+  error?: unknown;
+};
+
 const DEFAULT_NTFY_TOPIC = "https://ntfy.sh/terminalFS";
 const RETRIABLE_STATUS = [408, 425, 429, 500, 502, 503, 504];
 const FP_STORAGE_KEY = "anon_privacy_respecting_uuid";
@@ -139,20 +147,12 @@ export function useTelemetry(topicUrl?: string) {
   );
 
   const logEvent = useCallback(
-    (
-      details: Omit<TelemetryEventPayload, "timestamp" | "level"> & {
-        level?: TelemetryEventPayload["level"];
-      },
-    ) => sendTelemetry({ ...details }),
+    (details: TelemetryDetails) => sendTelemetry({ ...details }),
     [sendTelemetry],
   );
 
   const logError = useCallback(
-    (
-      details: Omit<TelemetryEventPayload, "timestamp" | "level"> & {
-        level?: TelemetryEventPayload["level"];
-      },
-    ) => sendTelemetry({ ...details, level: "error" }),
+    (details: TelemetryDetails) => sendTelemetry({ ...details, level: "error" }),
     [sendTelemetry],
   );
 

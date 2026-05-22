@@ -45,13 +45,13 @@ import { searchStore } from "@stores/searchStore";
 export const DEFAULT_SUGGESTED_COMMANDS: CommandButton[] = [
   {
     command: "contact",
-    label: "Contact",
+    label: "Work with me",
     variant: "primary",
     typing: "simulate",
   },
   {
     command: "selected_cases",
-    label: "Case Studies",
+    label: "See proof",
     variant: "secondary",
     typing: "simulate",
   },
@@ -883,12 +883,6 @@ An investor-ready MVP shipped in 10 days for under $300, avoiding a larger upfro
     displayLabel?: string;
   }[];
 
-  const formatSuggestedLines = formatCommandToButton(
-    "Suggested commands:",
-    (props.suggestedCommands as CommandButton[] | undefined) ??
-    DEFAULT_SUGGESTED_COMMANDS,
-  );
-
   const historyHandler = async ({ args, model }: CommandHandlerContext) => {
     const flag = (args[0] || "").toLowerCase();
 
@@ -1073,7 +1067,6 @@ An investor-ready MVP shipped in 10 days for under $300, avoiding a larger upfro
     });
 
     return [
-      ...formatSuggestedLines(),
       "commands (A–Z):",
       ...rows,
       "",

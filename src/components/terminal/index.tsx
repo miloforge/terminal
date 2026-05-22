@@ -131,8 +131,8 @@ export default function Terminal(props: TerminalProps) {
     () => [
       {
         id: "human",
-        label: "Contact me",
-        meta: "Send recurring workflow context",
+        label: "Hire me",
+        meta: "Delegate all your software needs",
         action: () => executeCommand("contact"),
       },
     ],
