@@ -44,20 +44,32 @@ import { searchStore } from "@stores/searchStore";
 
 export const DEFAULT_SUGGESTED_COMMANDS: CommandButton[] = [
   {
-    command: "contact",
-    label: "Work with me",
-    variant: "primary",
+    command: "services",
+    label: "Services",
+    variant: "secondary",
     typing: "simulate",
   },
   {
     command: "selected_cases",
-    label: "See proof",
+    label: "Case Studies",
     variant: "secondary",
     typing: "simulate",
   },
   {
     command: "download resume",
-    label: "CV",
+    label: "About",
+    variant: "secondary",
+    typing: "simulate",
+  },
+  {
+    command: "contact",
+    label: "Start a Conversation",
+    variant: "primary",
+    typing: "simulate",
+  },
+  {
+    command: "blog",
+    label: "Insights",
     variant: "secondary",
     typing: "simulate",
   },
@@ -533,7 +545,7 @@ export function registerDefaultCommands({
   const fontController = appearanceController?.font;
   const colorController = appearanceController?.color;
   const contact = props.contact || {
-    email: "contact@failuresmith.xyz",
+    email: "onboarding@failuresmith.xyz",
   };
   if (typeof document !== "undefined") {
     applyMotionMode(readStoredMotion());
@@ -1413,7 +1425,7 @@ An investor-ready MVP shipped in 10 days for under $300, avoiding a larger upfro
       "contact",
       () => {
         const lines: TerminalLineInput[] = [
-          "If a recurring workflow is costing time, creating errors, or blocking scale, send me the context.",
+          "If technical uncertainty, contractor drift, or missed deadlines are blocking progress, send me the context.",
           "",
           ...contactEntries.map((entry) =>
             buildContactRow(entry.displayLabel ?? entry.label, entry.value),
@@ -1424,7 +1436,7 @@ An investor-ready MVP shipped in 10 days for under $300, avoiding a larger upfro
 
         lines.push([
           createTextSegment(" 📞 "),
-          createCommandSegment("book", "Book a call", "Open booking calendar"),
+          createCommandSegment("book", "Book an intro call", "Open booking calendar"),
         ]);
 
         lines.push("");

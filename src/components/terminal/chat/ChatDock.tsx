@@ -18,7 +18,7 @@ import { getChatActions, getChatDisplayContent } from "./chatActions";
 import "./chat.css";
 
 const SUGGESTED_PROMPTS = [
-  "Can you help with my software idea?",
+  "Can you turn my uncertainty into an execution plan?",
   "What kind of work are you best suited for?",
   "Show me proof of reliability/security thinking.",
   "Can you work on AI/Web3/full-stack systems?",
@@ -44,7 +44,7 @@ type ChatDockProps = {
 
 export function ChatDock({
   onBookCall,
-  contactEmail = "contact@failuresmith.xyz",
+  contactEmail = "onboarding@failuresmith.xyz",
 }: ChatDockProps) {
   // Select all needed slices in one selector and shallow-compare to cut down on re-renders.
   const {

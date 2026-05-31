@@ -925,7 +925,10 @@ function LogAccordion({ items }: { items: LogSegment["items"] }) {
             ? buildShareLink(shareCommand, window.location.href)
             : `${displayDate} — ${item.note}`;
         return (
-          <div key={idx} className={`t-logItem${isOpen ? " is-open" : ""}`}>
+          <div
+            key={idx}
+            className={`t-logItem${isOpen ? " is-open" : ""}${item.markdownVariant === "blog" ? " is-blog" : ""}`}
+          >
             <button
               type="button"
               className="t-logSummary"
@@ -1275,6 +1278,7 @@ export function TerminalLineRow({
   executeCommand,
   isCommandLine,
   isCollapsed,
+  isHistoricalCommand,
   prompt,
   commandText,
   onToggleCollapse,
@@ -1313,7 +1317,9 @@ export function TerminalLineRow({
   const interactiveContent = isCommandLine ? (
     <button
       type="button"
-      className={`t-lineCommand${isCollapsed ? " is-collapsed" : " is-open"}`}
+      className={`t-lineCommand${isCollapsed ? " is-collapsed" : " is-open"}${
+        isHistoricalCommand ? " is-historical" : ""
+      }`}
       aria-expanded={!isCollapsed}
       aria-label={`${isCollapsed ? "Expand" : "Collapse"} output for ${commandLabel || "command"}`}
       onClick={(event) => {

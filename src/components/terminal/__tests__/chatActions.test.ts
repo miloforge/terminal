@@ -9,7 +9,7 @@ describe("chat action extraction", () => {
   it("adds a booking action when the assistant suggests booking", () => {
     const actions = getChatActions(
       "Would you like to book a call? https://cal.com/miladtsx/intro",
-      "contact@failuresmith.xyz",
+      "onboarding@failuresmith.xyz",
     );
 
     expect(actions).toContainEqual({
@@ -23,8 +23,8 @@ describe("chat action extraction", () => {
 
   it("extracts safe contact links and strips sentence punctuation", () => {
     const actions = getChatActions(
-      "Email contact@failuresmith.xyz or message https://t.me/miladtsx.",
-      "contact@failuresmith.xyz",
+      "Email onboarding@failuresmith.xyz or message https://t.me/miladtsx.",
+      "onboarding@failuresmith.xyz",
     );
 
     expect(actions).toEqual([
@@ -35,10 +35,10 @@ describe("chat action extraction", () => {
         href: "https://t.me/miladtsx",
       },
       {
-        id: "email:contact@failuresmith.xyz",
+        id: "email:onboarding@failuresmith.xyz",
         kind: "email",
         label: "Send email",
-        href: "mailto:contact@failuresmith.xyz?subject=Recurring%20workflow%20context",
+        href: "mailto:onboarding@failuresmith.xyz?subject=Recurring%20workflow%20context",
       },
     ]);
   });
@@ -46,7 +46,7 @@ describe("chat action extraction", () => {
   it("removes targets from visible text when buttons cover them", () => {
     const content =
       "Would you like to book a call?\nhttps://cal.com/miladtsx/intro";
-    const actions = getChatActions(content, "contact@failuresmith.xyz");
+    const actions = getChatActions(content, "onboarding@failuresmith.xyz");
 
     expect(getChatDisplayContent(content, actions)).toBe(
       "Would you like to book a call?",

@@ -264,11 +264,23 @@
     color: inherit;
     font: inherit;
     line-height: inherit;
+    transition: color 160ms ease, opacity 160ms ease;
   }
 
   .t-lineCommand:focus-visible {
     outline: 1px dashed var(--accent);
     outline-offset: 2px;
+  }
+
+  .t-lineCommand.is-historical.is-collapsed {
+    color: color-mix(in srgb, var(--text) 42%, var(--surface) 58%);
+    opacity: 0.78;
+  }
+
+  .t-lineCommand.is-historical.is-collapsed:hover,
+  .t-lineCommand.is-historical.is-collapsed:focus-visible {
+    color: inherit;
+    opacity: 1;
   }
 
   .t-link {
@@ -1931,6 +1943,15 @@
         rgba(255, 255, 255, 0.12) 1px,
         transparent 1px,
         transparent 4px);
+  }
+
+  .t-logItem.is-blog {
+    background: transparent;
+  }
+
+  .t-logItem.is-blog::before,
+  .t-logItem.is-blog::after {
+    background: none;
   }
 
   .t-logItem.is-open {

@@ -357,46 +357,46 @@ export function useTerminalController(props: TerminalProps): ControllerReturn {
       type: "markdown",
       markdown: `
 <div class="intro-hero">
-  <div class="intro-trustline font-mono">Your Execution Partner</div>
-  <div class="intro-headline">Turn ideas into reliable Software products.</div>
-  <div class="intro-subline font-mono">For founder-led startups who need more than code: I own technical execution from product decisions to architecture, delivery, reliability, and day-to-day operational clarity.</div>
+  <div class="intro-trustline font-mono">When nobody owns execution, everything slows down.</div>
+  <div class="intro-headline">Ownership for founders who need decisions, deadlines, and delivery they can trust.</div>
+  <div class="intro-subline font-mono">I turn technical uncertainty, contractor drift, and conflicting advice into one accountable path from decision to production.</div>
 </div>
       `.trim(),
     };
     const operatingModel: OperatingModelSegment = {
       type: "operatingModel",
-      kicker: "OPERA",
-      title: "My operating system for product execution",
+      kicker: "Ownership",
+      title: "How I reduce execution risk for founders",
       steps: [
         {
           index: "01",
           title: "Observe",
-          summary: "Understand the business before making decisions.",
-          description: "We define what success looks like. Every engagement starts with understanding the problem, not proposing solutions. I gather context, clarify objectives, and identify constraints. This ensures every technical decision supports a business outcome rather than adding unnecessary complexity."
+          summary: "Clarify the real risk before choosing a solution.",
+          description: "We separate business risk, technical risk, and execution risk before work starts. I gather context, clarify objectives, name constraints, and define what progress must prove so decisions stop depending on guesswork."
         },
         {
           index: "02",
           title: "Prioritize",
-          summary: "Focus on the highest-leverage work first.",
-          description: "Not every feature, integration, or improvement deserves equal attention. I evaluate opportunities, risks, dependencies, and tradeoffs to create a clear execution plan. The result is a prioritized roadmap that maximizes progress while minimizing wasted effort."
+          summary: "Turn uncertainty into an accountable plan.",
+          description: "Not every feature, integration, or improvement deserves equal attention. I evaluate risks, dependencies, deadlines, tradeoffs, and decision points so the plan shows what matters now, what can wait, and who owns the next move."
         },
         {
           index: "03",
           title: "Execute",
-          summary: "Deliver working systems with speed and discipline.",
-          description: "I own implementation from architecture to deployment. Every decision is guided by reliability, maintainability, and business impact. The goal is not simply to write code, but to deliver a working product that creates measurable value."
+          summary: "Own delivery, not just tasks.",
+          description: "I carry decisions through architecture, implementation, deployment, and follow-through. The goal is not to create more code; it is to make the right thing ship with visible ownership, clear tradeoffs, and measurable business value."
         },
         {
           index: "04",
           title: "Reinforce",
-          summary: "Strengthen the system before weaknesses become problem.",
-          description: "Once functionality is in place, I focus on operational resilience. Testing, automation, monitoring, deployment safeguards, documentation, and recovery procedures are implemented to reduce risk and improve predictability. The result is a system that can be trusted in production."
+          summary: "Make progress visible and dependable.",
+          description: "Once functionality is in place, I add the safeguards founders usually wish contractors had handled earlier: tests, deployment checks, monitoring, documentation, recovery paths, and enough evidence to know whether the system can be trusted."
         },
         {
           index: "05",
           title: "Adapt",
-          summary: "Improve continuously based on real-world feedback.",
-          description: "Markets change, priorities shift, and new information emerges. I continuously evaluate outcomes, identify bottlenecks, and refine the product based on real usage and business needs. This keeps the system effective, relevant, and capable of supporting future growth."
+          summary: "Re-plan when reality changes.",
+          description: "Markets move, priorities shift, and new information appears. I keep outcomes visible, identify bottlenecks, and adjust the execution path before drift turns into missed deadlines, wasted spend, or avoidable rework."
         },
       ],
     };

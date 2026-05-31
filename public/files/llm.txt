@@ -27,7 +27,7 @@
    **Tech**: TypeScript, Google Cloud (Cloud Run), Generative AI (Gemini), API Design, Smart Contracts (EVM-compatible), X/Twitter & Gnosis Safe integrations  
    **Key Impacts**:  
    - Delivered investor-ready mock MVP in 10 days from a single-paragraph idea → avoided ~$10k wasted development spend  
-   - Architected scalable GCP backend designed to support ~4,000-user waitlist with clear MVP-to-production boundaries  
+   - Architected scalable GCP backend designed to support ~5,000-user waitlist with clear MVP-to-production boundaries  
    - Integrated X/Twitter authentication, Gnosis Safe wallets, multiple EVM chains, and Gemini for content moderation/user flows
 
 2. **Senior Software Engineer (Fractional CTO / Advisor)**  

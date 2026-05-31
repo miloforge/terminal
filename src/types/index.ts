@@ -250,6 +250,7 @@ export type TerminalLineProps = {
   ) => void;
   isCommandLine?: boolean;
   isCollapsed?: boolean;
+  isHistoricalCommand?: boolean;
   prompt?: string;
   commandText?: string;
   onToggleCollapse?: () => void;

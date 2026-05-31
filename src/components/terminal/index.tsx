@@ -132,7 +132,7 @@ export default function Terminal(props: TerminalProps) {
       {
         id: "human",
         label: "Hire me",
-        meta: "Delegate all your software needs",
+        meta: "Get accountable execution ownership",
         action: () => executeCommand("contact"),
       },
     ],
@@ -268,6 +268,7 @@ export default function Terminal(props: TerminalProps) {
     commandLines.forEach((cmd) => map.set(cmd.index, { commandText: cmd.commandText }));
     return map;
   }, [commandLines]);
+  const latestCommandIndex = commandLines[commandLines.length - 1]?.index ?? null;
 
   const markTyping = useCallback(() => {
     setIsTyping(true);
@@ -447,6 +448,8 @@ export default function Terminal(props: TerminalProps) {
             const commandMeta = commandLookup.get(index);
             const isCommandLine = Boolean(commandMeta);
             const isCollapsed = isCommandLine && collapsedCommands[index];
+            const isHistoricalCommand =
+              isCommandLine && latestCommandIndex !== null && index < latestCommandIndex;
 
             return (
               <span key={`line-${index}`}>
@@ -457,6 +460,7 @@ export default function Terminal(props: TerminalProps) {
                   executeCommand={executeCommand}
                   isCommandLine={isCommandLine}
                   isCollapsed={isCollapsed}
+                  isHistoricalCommand={isHistoricalCommand}
                   prompt={prompt}
                   commandText={commandMeta?.commandText}
                   onToggleCollapse={isCommandLine ? () => toggleCollapse(index) : undefined}

@@ -90,3 +90,6 @@ Performance proof: include a tiny benchmark card (e.g., “render <50ms on media
 
 If you want it to feel organic: weave these elements into the product UI (status chip, version, dry-run toggle, chaos test) instead of a “Hire me” banner; the behaviors themselves do the talking.
 
+
+[] recommendations 
+    Roya, Andrei, Erfan : Milad takes ownership, figures things out, and get things done.
