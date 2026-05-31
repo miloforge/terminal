@@ -39,7 +39,7 @@ function setMeta(name: string, content: string) {
 }
 
 function postHref(post: BlogPost) {
-  return withBase(`/blog/${encodeURIComponent(post.slug)}`);
+  return withBase(`/blog/${encodeURIComponent(post.slug)}/`);
 }
 
 export default function BlogPage({ slug }: BlogPageProps) {
@@ -66,7 +66,7 @@ export default function BlogPage({ slug }: BlogPageProps) {
           <h1>Post not found</h1>
           <p>The requested note is not available.</p>
         </header>
-        <a className="blog-backLink" href={withBase("/blog")}>
+        <a className="blog-backLink" href={withBase("/blog/")}>
           Back to blog
         </a>
       </main>
@@ -82,7 +82,7 @@ export default function BlogPage({ slug }: BlogPageProps) {
           <a className="blog-homeLink" href={withBase("/")}>
             FS.dev
           </a>
-          <a className="blog-backLink" href={withBase("/blog")}>
+          <a className="blog-backLink" href={withBase("/blog/")}>
             Blog
           </a>
         </header>
