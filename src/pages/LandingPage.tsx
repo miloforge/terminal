@@ -18,7 +18,13 @@ import {
 import { LandingHeader } from "./landing/LandingHeader";
 import { RecognitionSection } from "./landing/RecognitionSection";
 import { WorkSection } from "./landing/WorkSection";
+import { caseStudies } from "./landing/content";
 import type { LandingSectionId } from "./landing/types";
+import {
+  getWorkEntryIndex,
+  getWorkNavigationTarget,
+  type WorkNavigationDirection,
+} from "./landing/workNavigation";
 
 const configuredBasePath = import.meta.env.BASE_URL || "/";
 const basePath = configuredBasePath.replace(/\/$/, "");
@@ -93,6 +99,8 @@ function renderLandingSection(
   sectionId: LandingSectionId,
   heroTrustlineState: HeroTrustlineState,
   onHeroTrustlineComplete: () => void,
+  activeCaseStudyIndex: number,
+  caseStudyDirection: WorkNavigationDirection,
 ) {
   switch (sectionId) {
     case "hero":
@@ -108,7 +116,13 @@ function renderLandingSection(
     case "approach":
       return <ApproachSection hidden={false} />;
     case "work":
-      return <WorkSection hidden={false} />;
+      return (
+        <WorkSection
+          activeCaseStudyIndex={activeCaseStudyIndex}
+          hidden={false}
+          navigationDirection={caseStudyDirection}
+        />
+      );
     case "about":
       return <AboutSection hidden={false} />;
   }
@@ -131,22 +145,34 @@ export default function LandingPage({
   const wheelDeltaRef = useRef(0);
   const wheelLockedRef = useRef(false);
   const wheelUnlockTimerRef = useRef<number | null>(null);
+  const [activeCaseStudyIndex, setActiveCaseStudyIndex] = useState(0);
+  const [caseStudyDirection, setCaseStudyDirection] =
+    useState<WorkNavigationDirection>(1);
   const [heroTrustlineState, setHeroTrustlineState] =
     useState<HeroTrustlineState>("idle");
   const activeSection = landingSectionOrder[activeIndex];
   const shouldReduceMotion = useReducedMotion();
 
-  const selectSectionIndex = useCallback((nextIndex: number) => {
-    const clampedIndex = Math.min(
-      Math.max(nextIndex, 0),
-      landingSectionOrder.length - 1,
-    );
-    if (clampedIndex !== activeIndex) {
-      setNavigationDirection(clampedIndex > activeIndex ? 1 : -1);
-    }
-    setActiveIndex(clampedIndex);
-    replaceHash(landingSectionOrder[clampedIndex]);
-  }, [activeIndex]);
+  const selectSectionIndex = useCallback(
+    (nextIndex: number, workEntryDirection: WorkNavigationDirection = 1) => {
+      const clampedIndex = Math.min(
+        Math.max(nextIndex, 0),
+        landingSectionOrder.length - 1,
+      );
+      if (clampedIndex !== activeIndex) {
+        setNavigationDirection(clampedIndex > activeIndex ? 1 : -1);
+      }
+      if (landingSectionOrder[clampedIndex] === "work") {
+        setCaseStudyDirection(workEntryDirection);
+        setActiveCaseStudyIndex(
+          getWorkEntryIndex(workEntryDirection, caseStudies.length),
+        );
+      }
+      setActiveIndex(clampedIndex);
+      replaceHash(landingSectionOrder[clampedIndex]);
+    },
+    [activeIndex],
+  );
 
   const navigateToSection = useCallback(
     (sectionId: LandingSectionId) => {
@@ -157,11 +183,39 @@ export default function LandingPage({
   );
 
   const navigateByDirection = useCallback(
-    (direction: 1 | -1) => {
-      selectSectionIndex(activeIndex + direction);
+    (direction: WorkNavigationDirection) => {
+      selectSectionIndex(activeIndex + direction, direction);
     },
     [activeIndex, selectSectionIndex],
   );
+
+  const navigateWithinActiveSurface = useCallback(
+    (direction: WorkNavigationDirection) => {
+      if (activeSection === "work") {
+        const target = getWorkNavigationTarget(
+          activeCaseStudyIndex,
+          direction,
+          caseStudies.length,
+        );
+
+        if (target.type === "case") {
+          setCaseStudyDirection(direction);
+          setActiveCaseStudyIndex(target.index);
+          return;
+        }
+      }
+
+      navigateByDirection(direction);
+    },
+    [activeCaseStudyIndex, activeSection, navigateByDirection],
+  );
+
+  const lockWheelNavigation = useCallback(() => {
+    wheelLockedRef.current = true;
+    wheelUnlockTimerRef.current = window.setTimeout(() => {
+      wheelLockedRef.current = false;
+    }, wheelLockMs);
+  }, []);
 
   const startHeroTrustlineTyping = useCallback(() => {
     setHeroTrustlineState((currentState) =>
@@ -271,12 +325,9 @@ export default function LandingPage({
     wheelDeltaRef.current += event.deltaY;
     if (Math.abs(wheelDeltaRef.current) < wheelThreshold) return;
 
-    navigateByDirection(wheelDeltaRef.current > 0 ? 1 : -1);
+    navigateWithinActiveSurface(wheelDeltaRef.current > 0 ? 1 : -1);
     wheelDeltaRef.current = 0;
-    wheelLockedRef.current = true;
-    wheelUnlockTimerRef.current = window.setTimeout(() => {
-      wheelLockedRef.current = false;
-    }, wheelLockMs);
+    lockWheelNavigation();
   };
 
   const handlePointerDown = (event: PointerEvent<HTMLElement>) => {
@@ -327,7 +378,7 @@ export default function LandingPage({
     setContextMenu(null);
     if (advanceHeroTrustlineOnScroll()) return;
 
-    navigateByDirection(direction);
+    navigateWithinActiveSurface(direction);
   };
 
   const handlePointerCancel = (event: PointerEvent<HTMLElement>) => {
@@ -383,6 +434,8 @@ export default function LandingPage({
               activeSection,
               heroTrustlineState,
               completeHeroTrustline,
+              activeCaseStudyIndex,
+              caseStudyDirection,
             )}
           </motion.div>
         </AnimatePresence>

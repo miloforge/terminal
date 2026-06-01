@@ -1,5 +1,12 @@
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { caseStudies } from "./content";
 import type { LandingSectionProps } from "./types";
+import type { WorkNavigationDirection } from "./workNavigation";
+
+type WorkSectionProps = LandingSectionProps & {
+  activeCaseStudyIndex: number;
+  navigationDirection: WorkNavigationDirection;
+};
 
 function ArrowTitle({ before, after }: { before: string; after: string }) {
   return (
@@ -11,7 +18,14 @@ function ArrowTitle({ before, after }: { before: string; after: string }) {
   );
 }
 
-export function WorkSection({ hidden }: LandingSectionProps) {
+export function WorkSection({
+  activeCaseStudyIndex,
+  hidden,
+  navigationDirection,
+}: WorkSectionProps) {
+  const shouldReduceMotion = useReducedMotion();
+  const activeCaseStudy = caseStudies[activeCaseStudyIndex] ?? caseStudies[0];
+
   return (
     <section
       id="work"
@@ -27,21 +41,39 @@ export function WorkSection({ hidden }: LandingSectionProps) {
           </h2>
         </header>
 
-        <div className="landing-caseList">
-          {caseStudies.map((item) => (
-            <article
-              className="landing-caseStudy"
-              key={`${item.before}-${item.after}`}
-            >
-              <h3>
-                <ArrowTitle before={item.before} after={item.after} />
-              </h3>
-              <div className="landing-caseBody">
-                <p>{item.situation}</p>
-                <p>{item.outcome}</p>
-              </div>
-            </article>
-          ))}
+        <div className="landing-caseList" aria-live="polite">
+          {activeCaseStudy ? (
+            <AnimatePresence initial={false} mode="wait">
+              <motion.article
+                className="landing-caseStudy"
+                key={`${activeCaseStudy.before}-${activeCaseStudy.after}`}
+                initial={{
+                  opacity: 0,
+                  y: shouldReduceMotion ? 0 : 14 * navigationDirection,
+                }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{
+                  opacity: 0,
+                  y: shouldReduceMotion ? 0 : -10 * navigationDirection,
+                }}
+                transition={{
+                  duration: shouldReduceMotion ? 0.08 : 0.2,
+                  ease: shouldReduceMotion ? "linear" : [0.22, 1, 0.36, 1],
+                }}
+              >
+                <h3>
+                  <ArrowTitle
+                    before={activeCaseStudy.before}
+                    after={activeCaseStudy.after}
+                  />
+                </h3>
+                <div className="landing-caseBody">
+                  <p>{activeCaseStudy.situation}</p>
+                  <p>{activeCaseStudy.outcome}</p>
+                </div>
+              </motion.article>
+            </AnimatePresence>
+          ) : null}
         </div>
       </div>
     </section>
