@@ -34,6 +34,14 @@ body:has(.landing-page) {
   position: relative;
   height: 100svh;
   overflow: hidden;
+  touch-action: pan-x pinch-zoom;
+}
+
+.landing-slideFrame {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  will-change: opacity, transform;
 }
 
 .landing-slide[hidden] {

@@ -1,13 +1,16 @@
 import {
   type MouseEvent,
+  type PointerEvent,
   type WheelEvent,
   useCallback,
   useEffect,
   useRef,
   useState,
 } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { AboutSection } from "./landing/AboutSection";
 import { ApproachSection } from "./landing/ApproachSection";
+import { getDragNavigationDirection } from "./landing/dragNavigation";
 import { HeroSection } from "./landing/HeroSection";
 import { LandingHeader } from "./landing/LandingHeader";
 import { RecognitionSection } from "./landing/RecognitionSection";
@@ -23,6 +26,8 @@ const contextMenuHeight = 98;
 const contextMenuMargin = 8;
 const wheelThreshold = 60;
 const wheelLockMs = 560;
+const clickSuppressionMs = 350;
+const calmEase = [0.22, 1, 0.36, 1] as const;
 
 const landingSectionOrder: LandingSectionId[] = [
   "hero",
@@ -35,6 +40,12 @@ const landingSectionOrder: LandingSectionId[] = [
 type LandingPageProps = {
   onAskAi: () => void;
   onOpenTerminal: () => void;
+};
+
+type DragState = {
+  pointerId: number;
+  startX: number;
+  startY: number;
 };
 
 function getInitialSectionIndex() {
@@ -74,29 +85,55 @@ function replaceHash(sectionId: LandingSectionId) {
   window.history.replaceState(null, "", nextUrl);
 }
 
+function renderLandingSection(
+  sectionId: LandingSectionId,
+  onNavigate: (sectionId: LandingSectionId) => void,
+) {
+  switch (sectionId) {
+    case "hero":
+      return <HeroSection hidden={false} onNavigate={onNavigate} />;
+    case "recognition":
+      return <RecognitionSection hidden={false} />;
+    case "approach":
+      return <ApproachSection hidden={false} />;
+    case "work":
+      return <WorkSection hidden={false} />;
+    case "about":
+      return <AboutSection hidden={false} />;
+  }
+}
+
 export default function LandingPage({
   onAskAi,
   onOpenTerminal,
 }: LandingPageProps) {
   const [activeIndex, setActiveIndex] = useState(getInitialSectionIndex);
+  const [navigationDirection, setNavigationDirection] = useState<1 | -1>(1);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
   } | null>(null);
   const firstMenuItemRef = useRef<HTMLButtonElement | null>(null);
+  const dragStateRef = useRef<DragState | null>(null);
+  const suppressNextClickRef = useRef(false);
+  const clickSuppressionTimerRef = useRef<number | null>(null);
   const wheelDeltaRef = useRef(0);
   const wheelLockedRef = useRef(false);
   const wheelUnlockTimerRef = useRef<number | null>(null);
   const activeSection = landingSectionOrder[activeIndex];
+  const shouldReduceMotion = useReducedMotion();
 
   const selectSectionIndex = useCallback((nextIndex: number) => {
     const clampedIndex = Math.min(
       Math.max(nextIndex, 0),
       landingSectionOrder.length - 1,
     );
+    if (clampedIndex !== activeIndex) {
+      setNavigationDirection(clampedIndex > activeIndex ? 1 : -1);
+    }
     setActiveIndex(clampedIndex);
     replaceHash(landingSectionOrder[clampedIndex]);
-  }, []);
+  }, [activeIndex]);
 
   const navigateToSection = useCallback(
     (sectionId: LandingSectionId) => {
@@ -121,6 +158,9 @@ export default function LandingPage({
     return () => {
       if (wheelUnlockTimerRef.current) {
         window.clearTimeout(wheelUnlockTimerRef.current);
+      }
+      if (clickSuppressionTimerRef.current) {
+        window.clearTimeout(clickSuppressionTimerRef.current);
       }
     };
   }, []);
@@ -157,6 +197,13 @@ export default function LandingPage({
     action();
   };
 
+  const suppressClickAfterDrag = (event: MouseEvent<HTMLElement>) => {
+    if (!suppressNextClickRef.current) return;
+    event.preventDefault();
+    event.stopPropagation();
+    suppressNextClickRef.current = false;
+  };
+
   const handleWheel = (event: WheelEvent<HTMLElement>) => {
     event.preventDefault();
     setContextMenu(null);
@@ -175,9 +222,67 @@ export default function LandingPage({
     }, wheelLockMs);
   };
 
+  const handlePointerDown = (event: PointerEvent<HTMLElement>) => {
+    if (event.pointerType === "mouse" || !event.isPrimary) return;
+    setContextMenu(null);
+    dragStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerMove = (event: PointerEvent<HTMLElement>) => {
+    const dragState = dragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - dragState.startX;
+    const deltaY = event.clientY - dragState.startY;
+    if (getDragNavigationDirection(deltaX, deltaY)) {
+      event.preventDefault();
+    }
+  };
+
+  const handlePointerEnd = (event: PointerEvent<HTMLElement>) => {
+    const dragState = dragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) return;
+
+    dragStateRef.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    const direction = getDragNavigationDirection(
+      event.clientX - dragState.startX,
+      event.clientY - dragState.startY,
+    );
+    if (!direction) return;
+
+    suppressNextClickRef.current = true;
+    if (clickSuppressionTimerRef.current) {
+      window.clearTimeout(clickSuppressionTimerRef.current);
+    }
+    clickSuppressionTimerRef.current = window.setTimeout(() => {
+      suppressNextClickRef.current = false;
+    }, clickSuppressionMs);
+
+    setContextMenu(null);
+    navigateByDirection(direction);
+  };
+
+  const handlePointerCancel = (event: PointerEvent<HTMLElement>) => {
+    if (dragStateRef.current?.pointerId !== event.pointerId) return;
+    dragStateRef.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+
   return (
     <main
       className="landing-page"
+      onClickCapture={suppressClickAfterDrag}
       onContextMenu={openContextMenu}
       onWheel={handleWheel}
     >
@@ -188,15 +293,36 @@ export default function LandingPage({
         onNavigate={navigateToSection}
       />
 
-      <div className="landing-stage" aria-live="polite">
-        <HeroSection
-          hidden={activeSection !== "hero"}
-          onNavigate={navigateToSection}
-        />
-        <RecognitionSection hidden={activeSection !== "recognition"} />
-        <ApproachSection hidden={activeSection !== "approach"} />
-        <WorkSection hidden={activeSection !== "work"} />
-        <AboutSection hidden={activeSection !== "about"} />
+      <div
+        className="landing-stage"
+        aria-live="polite"
+        aria-atomic="true"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerCancel}
+      >
+        <AnimatePresence initial={false} mode="wait">
+          <motion.div
+            key={activeSection}
+            className="landing-slideFrame"
+            initial={{
+              opacity: 0,
+              y: shouldReduceMotion ? 0 : 12 * navigationDirection,
+            }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{
+              opacity: 0,
+              y: shouldReduceMotion ? 0 : -8 * navigationDirection,
+            }}
+            transition={{
+              duration: shouldReduceMotion ? 0.12 : 0.24,
+              ease: shouldReduceMotion ? "linear" : calmEase,
+            }}
+          >
+            {renderLandingSection(activeSection, navigateToSection)}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {contextMenu ? (
