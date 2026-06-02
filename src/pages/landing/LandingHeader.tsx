@@ -35,7 +35,7 @@ export function LandingHeader({
           onClick={handleSectionClick("work")}
           aria-current={activeSection === "work" ? "page" : undefined}
         >
-          Work
+          Case Studies
         </a>
         <a href={blogHref}>Thinking</a>
         <a
