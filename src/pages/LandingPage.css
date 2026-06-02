@@ -443,7 +443,6 @@ body:has(.landing-page) {
 }
 
 .landing-principle {
-  padding: 2rem 0;
   border-bottom: 1px solid var(--landing-rule);
 }
 
@@ -453,8 +452,77 @@ body:has(.landing-page) {
   font-weight: 650;
 }
 
+.landing-principleButton {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 2rem 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.landing-principleButton::after {
+  content: "";
+  flex: 0 0 auto;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  opacity: 0.62;
+  transform: translateY(-0.16rem) rotate(45deg);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.landing-principleButton:hover::after,
+.landing-principleButton:focus-visible::after,
+.landing-principle[data-expanded="true"] .landing-principleButton::after {
+  opacity: 1;
+}
+
+.landing-principleButton:focus-visible {
+  outline: 1px solid var(--landing-accent);
+  outline-offset: 5px;
+}
+
+.landing-principle[data-expanded="true"] .landing-principleButton {
+  padding-bottom: 0.75rem;
+}
+
+.landing-principle[data-expanded="true"] .landing-principleButton::after {
+  transform: translateY(0.16rem) rotate(225deg);
+}
+
+.landing-principlePanel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 180ms ease,
+    opacity 160ms ease;
+}
+
+.landing-principle[data-expanded="true"] .landing-principlePanel {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.landing-principlePanelInner {
+  overflow: hidden;
+}
+
 .landing-principle p {
-  margin: 0.75rem 0 0;
+  margin: 0;
+  padding: 0 0 2rem;
   color: var(--landing-muted);
   font-size: clamp(1rem, 1.45vw, 1.1rem);
   line-height: 1.7;
@@ -541,8 +609,23 @@ body:has(.landing-page) {
     gap: 0.75rem;
   }
 
-  .landing-principle {
+  .landing-principleButton {
     padding: 1.15rem 0;
+  }
+
+  .landing-principle[data-expanded="true"] .landing-principleButton {
+    padding-bottom: 0.65rem;
+  }
+
+  .landing-principle p {
+    padding-bottom: 1.15rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-principleButton::after,
+  .landing-principlePanel {
+    transition: none;
   }
 }
 
