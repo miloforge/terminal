@@ -111,7 +111,7 @@ export default function BlogPage({ slug }: BlogPageProps) {
     <main className="blog-page">
       <header className="blog-header">
         <a className="blog-homeLink" href={withBase("/")}>
-          FS.dev
+          Home
         </a>
         <h1>Blog</h1>
         <p>{BLOG_DESCRIPTION}</p>
