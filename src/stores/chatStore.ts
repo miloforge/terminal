@@ -14,6 +14,11 @@ export type ChatMessage = {
 
 type ChatTone = "technical" | "non-technical" | null;
 
+type ChatHistoryMessage = {
+  role: ChatRole;
+  content: string;
+};
+
 type ChatStatus = {
   isOpen: boolean;
   isMinimized: boolean;
@@ -48,6 +53,17 @@ const uuid = () => {
     return crypto.randomUUID();
   }
   return Math.random().toString(36).slice(2);
+};
+
+const buildChatHistory = (
+  messages: ChatMessage[],
+): ChatHistoryMessage[] | null => {
+  const history = messages
+    .slice(-12) // avoid unnecessary bandwidth
+    .filter((m) => m.role === "user" || m.role === "assistant")
+    .map((m) => ({ role: m.role, content: m.content })); // drop id/createdAt
+
+  return history.length ? history : null;
 };
 
 // Lightweight IndexedDB storage for zustand persist.
@@ -308,6 +324,8 @@ export const useChatStore = create<ChatStore>()(
         },
         sendMessage: async (text?: string) => {
           const state = get();
+          if (state.loading) return;
+
           const content = (text ?? state.input).trim();
           if (!content) return;
 
@@ -335,11 +353,7 @@ export const useChatStore = create<ChatStore>()(
             },
           });
 
-          const rawHistory = [...get().messages];
-          const history = rawHistory
-            .slice(-12) // avoid unnecessary bandwidth
-            .filter((m) => m.role === "user" || m.role === "assistant")
-            .map((m) => ({ role: m.role, content: m.content })); // drop id/createdAt
+          const history = buildChatHistory(state.messages);
 
           abortController = new AbortController();
 
