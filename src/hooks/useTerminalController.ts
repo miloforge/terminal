@@ -466,7 +466,7 @@ export function useTerminalController(props: ScreenProps): ControllerReturn {
           onClickCommand: "about",
           disableModal: true,
         }),
-        introMarkdown,
+        // introMarkdown,
         clientProof,
       ],
       primaryCtaLine,
