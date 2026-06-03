@@ -388,8 +388,9 @@ body:has(.landing-page) {
 }
 
 .landing-caseList {
+  --landing-case-list-stable-height: clamp(13rem, 25vh, 17rem);
   margin-top: clamp(2rem, 5vh, 4rem);
-  min-height: clamp(12rem, 24vh, 17rem);
+  height: var(--landing-case-list-stable-height);
 }
 
 .landing-caseStudy {
@@ -406,6 +407,7 @@ body:has(.landing-page) {
   font-weight: 400;
   line-height: 1.12;
   letter-spacing: 0;
+  min-height: 2.24em;
 }
 
 .landing-caseTitleText {
@@ -439,6 +441,8 @@ body:has(.landing-page) {
 }
 
 .landing-principles {
+  --landing-principles-stable-height: clamp(22rem, 39vh, 24rem);
+  height: var(--landing-principles-stable-height);
   border-top: 1px solid var(--landing-rule);
 }
 
@@ -492,10 +496,6 @@ body:has(.landing-page) {
 .landing-principleButton:focus-visible {
   outline: 1px solid var(--landing-accent);
   outline-offset: 5px;
-}
-
-.landing-principle[data-expanded="true"] .landing-principleButton {
-  padding-bottom: 0.75rem;
 }
 
 .landing-principle[data-expanded="true"] .landing-principleButton::after {
@@ -609,12 +609,16 @@ body:has(.landing-page) {
     gap: 0.75rem;
   }
 
+  .landing-caseList {
+    --landing-case-list-stable-height: clamp(19rem, 44vh, 23rem);
+  }
+
   .landing-principleButton {
     padding: 1.15rem 0;
   }
 
-  .landing-principle[data-expanded="true"] .landing-principleButton {
-    padding-bottom: 0.65rem;
+  .landing-principles {
+    --landing-principles-stable-height: 18.75rem;
   }
 
   .landing-principle p {

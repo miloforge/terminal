@@ -1,11 +1,9 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { caseStudies } from "./content";
 import type { LandingSectionProps } from "./types";
-import type { WorkNavigationDirection } from "./workNavigation";
 
 type WorkSectionProps = LandingSectionProps & {
   activeCaseStudyIndex: number;
-  navigationDirection: WorkNavigationDirection;
 };
 
 function ArrowTitle({ before, after }: { before: string; after: string }) {
@@ -21,7 +19,6 @@ function ArrowTitle({ before, after }: { before: string; after: string }) {
 export function WorkSection({
   activeCaseStudyIndex,
   hidden,
-  navigationDirection,
 }: WorkSectionProps) {
   const shouldReduceMotion = useReducedMotion();
   const activeCaseStudy = caseStudies[activeCaseStudyIndex] ?? caseStudies[0];
@@ -71,17 +68,11 @@ export function WorkSection({
               <motion.article
                 className="landing-caseStudy"
                 key={`${activeCaseStudy.before}-${activeCaseStudy.after}`}
-                initial={{
-                  opacity: 0,
-                  y: shouldReduceMotion ? 0 : 14 * navigationDirection,
-                }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{
-                  opacity: 0,
-                  y: shouldReduceMotion ? 0 : -10 * navigationDirection,
-                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 transition={{
-                  duration: shouldReduceMotion ? 0.08 : 0.2,
+                  duration: shouldReduceMotion ? 0.08 : 0.16,
                   ease: shouldReduceMotion ? "linear" : [0.22, 1, 0.36, 1],
                 }}
               >
