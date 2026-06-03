@@ -105,6 +105,7 @@ function renderLandingSection(
   heroTrustlineState: HeroTrustlineState,
   onHeroTrustlineComplete: () => void,
   activeCaseStudyIndex: number,
+  caseTransitionDirection: WorkNavigationDirection,
 ) {
   switch (sectionId) {
     case "hero":
@@ -123,6 +124,7 @@ function renderLandingSection(
       return (
         <WorkSection
           activeCaseStudyIndex={activeCaseStudyIndex}
+          caseTransitionDirection={caseTransitionDirection}
           hidden={false}
         />
       );
@@ -149,6 +151,8 @@ export default function LandingPage({
   const wheelLockedRef = useRef(false);
   const wheelUnlockTimerRef = useRef<number | null>(null);
   const [activeCaseStudyIndex, setActiveCaseStudyIndex] = useState(0);
+  const [caseTransitionDirection, setCaseTransitionDirection] =
+    useState<WorkNavigationDirection>(1);
   const [heroTrustlineState, setHeroTrustlineState] =
     useState<HeroTrustlineState>("idle");
   const activeSection = landingSectionOrder[activeIndex];
@@ -164,6 +168,7 @@ export default function LandingPage({
         setNavigationDirection(clampedIndex > activeIndex ? 1 : -1);
       }
       if (landingSectionOrder[clampedIndex] === "work") {
+        setCaseTransitionDirection(workEntryDirection);
         setActiveCaseStudyIndex(
           getWorkEntryIndex(workEntryDirection, caseStudies.length),
         );
@@ -199,6 +204,7 @@ export default function LandingPage({
         );
 
         if (target.type === "case") {
+          setCaseTransitionDirection(direction);
           setActiveCaseStudyIndex(target.index);
           return;
         }
@@ -457,6 +463,7 @@ export default function LandingPage({
               heroTrustlineState,
               completeHeroTrustline,
               activeCaseStudyIndex,
+              caseTransitionDirection,
             )}
           </motion.div>
         </AnimatePresence>

@@ -1,10 +1,46 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { caseStudies } from "./content";
 import type { LandingSectionProps } from "./types";
+import {
+  getCaseTransitionXOffset,
+  type CaseTransitionPhase,
+  type WorkNavigationDirection,
+} from "./workNavigation";
 
 type WorkSectionProps = LandingSectionProps & {
   activeCaseStudyIndex: number;
+  caseTransitionDirection: WorkNavigationDirection;
 };
+
+type CaseTransitionContext = {
+  direction: WorkNavigationDirection;
+  shouldReduceMotion: boolean;
+};
+
+const caseTransitionDistancePx = 32;
+const caseTransitionVariants = {
+  enter: (context: CaseTransitionContext) =>
+    getCaseTransitionFrame("enter", context),
+  active: { opacity: 1, x: 0 },
+  exit: (context: CaseTransitionContext) =>
+    getCaseTransitionFrame("exit", context),
+};
+
+function getCaseTransitionFrame(
+  phase: CaseTransitionPhase,
+  { direction, shouldReduceMotion }: CaseTransitionContext,
+) {
+  return {
+    opacity: 0,
+    x: shouldReduceMotion
+      ? 0
+      : getCaseTransitionXOffset(
+          direction,
+          phase,
+          caseTransitionDistancePx,
+        ),
+  };
+}
 
 function ArrowTitle({ before, after }: { before: string; after: string }) {
   return (
@@ -18,9 +54,14 @@ function ArrowTitle({ before, after }: { before: string; after: string }) {
 
 export function WorkSection({
   activeCaseStudyIndex,
+  caseTransitionDirection,
   hidden,
 }: WorkSectionProps) {
   const shouldReduceMotion = useReducedMotion();
+  const caseTransitionContext = {
+    direction: caseTransitionDirection,
+    shouldReduceMotion: Boolean(shouldReduceMotion),
+  };
   const activeCaseStudy = caseStudies[activeCaseStudyIndex] ?? caseStudies[0];
   const activeProgressIndex = activeCaseStudy
     ? caseStudies.indexOf(activeCaseStudy)
@@ -64,15 +105,21 @@ export function WorkSection({
           ) : null}
 
           {activeCaseStudy ? (
-            <AnimatePresence initial={false} mode="wait">
+            <AnimatePresence
+              custom={caseTransitionContext}
+              initial={false}
+              mode="wait"
+            >
               <motion.article
                 className="landing-caseStudy"
+                custom={caseTransitionContext}
                 key={`${activeCaseStudy.before}-${activeCaseStudy.after}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                variants={caseTransitionVariants}
+                initial="enter"
+                animate="active"
+                exit="exit"
                 transition={{
-                  duration: shouldReduceMotion ? 0.08 : 0.16,
+                  duration: shouldReduceMotion ? 0.08 : 0.2,
                   ease: shouldReduceMotion ? "linear" : [0.22, 1, 0.36, 1],
                 }}
               >

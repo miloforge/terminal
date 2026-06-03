@@ -1,4 +1,5 @@
 export type WorkNavigationDirection = 1 | -1;
+export type CaseTransitionPhase = "enter" | "exit";
 
 type CaseNavigationTarget = {
   type: "case";
@@ -39,4 +40,15 @@ export function getWorkNavigationTarget(
   }
 
   return { type: "case", index: nextIndex };
+}
+
+export function getCaseTransitionXOffset(
+  direction: WorkNavigationDirection,
+  phase: CaseTransitionPhase,
+  distance = 32,
+) {
+  const magnitude = Math.abs(distance);
+  const entryOffset = direction > 0 ? magnitude : -magnitude;
+
+  return phase === "enter" ? entryOffset : -entryOffset;
 }
