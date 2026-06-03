@@ -171,86 +171,6 @@
   min-height: 0;
 }
 
-.chat-tone {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 13px;
-  color: var(--muted, rgba(234, 241, 251, 0.8));
-}
-
-.chat-tone-title {
-  font-size: 12px;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-
-.chat-tone-options {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.chat-tone-option {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.2));
-  background: transparent;
-  font-weight: 500;
-  color: var(--text, #f4f6fb);
-  letter-spacing: 0.01em;
-}
-
-.chat-tone-option.is-active {
-  border-color: var(--accent, #8dd0ff);
-}
-
-.chat-tone-option input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.chat-tone-radio {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.4));
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1px;
-  box-sizing: border-box;
-}
-
-.chat-tone-radio::after {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent, #8dd0ff);
-  opacity: 0;
-  transition: opacity 150ms ease;
-}
-
-.chat-tone-option.is-active .chat-tone-radio::after {
-  opacity: 1;
-}
-
-.chat-tone-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.chat-tone-option-label {
-  font-size: 14px;
-}
-
 .chat-window.is-maximized .chat-body {
   max-height: none;
 }
@@ -263,10 +183,6 @@
   flex: 1 1 auto;
   gap: 16px;
   min-height: 0;
-  width: 100%;
-}
-
-.chat-startOptions .chat-tone {
   width: 100%;
 }
 
@@ -617,38 +533,13 @@
     max-width: 100%;
   }
 
-  .chat-tone-options {
-    flex-direction: column;
-  }
-
-  .chat-tone-option {
-    min-width: 100%;
-  }
-
   .chat-startOptions {
     gap: 10px;
   }
 
-  .chat-startOptions .chat-tone {
-    width: 100%;
-  }
-
-  .chat-tone-title,
   .chat-suggestions-title {
     font-size: 10px;
     letter-spacing: 0.16em;
-  }
-
-  .chat-tone-options {
-    gap: 7px;
-  }
-
-  .chat-tone-option {
-    padding: 7px 8px;
-  }
-
-  .chat-tone-option-label {
-    font-size: 12px;
   }
 
   .chat-suggestionList {

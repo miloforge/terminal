@@ -59,7 +59,6 @@ describe("chat store streaming", () => {
       input: "",
       unread: 0,
       error: null,
-      tone: "non-technical",
     });
   });
 
@@ -77,6 +76,40 @@ describe("chat store streaming", () => {
       tone: "non-technical",
       history: null,
       message: "What work do you avoid taking on?",
+    });
+  });
+
+  it("ignores stale saved response style state", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(streamResponse(["[DONE]"])));
+    useChatStore.setState({
+      tone: "technical",
+    } as never);
+
+    await useChatStore.getState().sendMessage("How should I explain the project?");
+
+    expect(getLastRequestBody()).toEqual({
+      tone: "non-technical",
+      history: null,
+      message: "How should I explain the project?",
+    });
+  });
+
+  it("removes legacy response style when migrating persisted chat state", async () => {
+    const migrate = useChatStore.persist.getOptions().migrate;
+    expect(migrate).toBeTypeOf("function");
+
+    const migrated = await migrate?.(
+      {
+        tone: "technical",
+        messages: [],
+        input: "saved draft",
+      },
+      1,
+    );
+
+    expect(migrated).toEqual({
+      messages: [],
+      input: "saved draft",
     });
   });
 

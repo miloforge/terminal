@@ -12,8 +12,6 @@ export type ChatMessage = {
   createdAt: number;
 };
 
-type ChatTone = "technical" | "non-technical" | null;
-
 type ChatHistoryMessage = {
   role: ChatRole;
   content: string;
@@ -27,14 +25,12 @@ type ChatStatus = {
   input: string;
   unread: number;
   error?: string | null;
-  tone: ChatTone;
 };
 
 type ChatStore = ChatStatus & {
   messages: ChatMessage[];
   sendMessage: (text?: string) => Promise<void>;
   setInput: (value: string) => void;
-  setTone: (tone: ChatTone) => void;
   clear: () => void;
   openChat: () => void;
   openChatMaximized: () => void;
@@ -46,7 +42,13 @@ type ChatStore = ChatStatus & {
   setMaximizeOnOpen: (value: boolean) => void;
 };
 
+type PersistedChatState = Partial<ChatStatus> & {
+  messages?: ChatMessage[];
+  tone?: unknown;
+};
+
 const CHATBOT_URL = import.meta.env.VITE_CHATBOT_URL;
+const CHAT_RESPONSE_TONE = "non-technical";
 
 const uuid = () => {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -137,6 +139,16 @@ const storage = createJSONStorage(() => {
       ),
   };
 });
+
+const removeLegacyResponseStyle = (
+  persistedState: unknown,
+): PersistedChatState => {
+  if (!persistedState || typeof persistedState !== "object") return {};
+
+  const state = { ...(persistedState as PersistedChatState) };
+  delete state.tone;
+  return state;
+};
 
 export const useChatStore = create<ChatStore>()(
   persist(
@@ -261,10 +273,8 @@ export const useChatStore = create<ChatStore>()(
         input: "",
         unread: 0,
         error: null,
-        tone: null,
         setMaximizeOnOpen: (value: boolean) => set({ maximizeOnOpen: value }),
         setInput: (value: string) => set({ input: value }),
-        setTone: (tone: ChatTone) => set({ tone }),
         markRead: () => set((state) => (state.unread ? { unread: 0 } : {})),
         openChat: () =>
           set((state) => ({
@@ -348,7 +358,7 @@ export const useChatStore = create<ChatStore>()(
             userInput: content,
             message: "chat user message",
             context: {
-              tone: state.tone ?? "default",
+              responseTone: CHAT_RESPONSE_TONE,
               messageId: userMessage.id,
             },
           });
@@ -362,7 +372,7 @@ export const useChatStore = create<ChatStore>()(
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                tone: state.tone ?? "non-technical",
+                tone: CHAT_RESPONSE_TONE,
                 history,
                 message: content,
               }),
@@ -457,7 +467,18 @@ export const useChatStore = create<ChatStore>()(
     {
       name: "chatbot-store",
       storage,
-      version: 1,
+      version: 2,
+      migrate: removeLegacyResponseStyle,
+      partialize: (state) => ({
+        messages: state.messages,
+        isOpen: state.isOpen,
+        isMinimized: state.isMinimized,
+        maximizeOnOpen: state.maximizeOnOpen,
+        loading: state.loading,
+        input: state.input,
+        unread: state.unread,
+        error: state.error,
+      }),
     },
   ),
 );
