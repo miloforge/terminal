@@ -263,7 +263,7 @@ function renderBlogNavigation({ showBlogLink = false } = {}) {
   return `
     <header class="blog-siteHeader" aria-label="Primary">
       <nav class="blog-nav" aria-label="Blog navigation">
-        <a class="blog-homeLink" href="${escapeHtml(withBase("/"))}">fs.dev</a>
+        <a class="blog-homeLink" href="${escapeHtml(withBase("/"))}">Milad</a>
         ${blogLink}
       </nav>
     </header>`.trim();
