@@ -70,7 +70,7 @@
   line-height: 1;
   letter-spacing: -0.04em;
   color: transparent;
-  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--text) 15%, transparent);
+  -webkit-text-stroke: 0.1px color-mix(in srgb, var(--text) 8%, transparent);
   user-select: none;
   pointer-events: none;
 }
@@ -114,6 +114,7 @@
   letter-spacing: 0.1px;
   color: var(--text);
   text-wrap: balance;
+  text-shadow: 0 1px 8px color-mix(in srgb, var(--bg) 60%, transparent);
 }
 
 .story-sub {
@@ -121,7 +122,8 @@
   max-width: 620px;
   font-size: 14.5px;
   line-height: 1.5;
-  color: color-mix(in srgb, var(--text) 72%, var(--muted) 28%);
+  color: color-mix(in srgb, var(--text) 90%, var(--muted) 15%);
+  text-shadow: 0 1px 6px color-mix(in srgb, var(--bg) 55%, transparent);
 }
 
 .story-scrollHint {
