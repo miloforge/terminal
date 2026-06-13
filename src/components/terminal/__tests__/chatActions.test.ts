@@ -8,7 +8,7 @@ import {
 describe("chat action extraction", () => {
   it("adds a booking action when the assistant suggests booking", () => {
     const actions = getChatActions(
-      "Would you like to book a call? https://cal.com/sebaesar/intro",
+      "Would you like to book a call? https://cal.com/miloforge/intro",
       "miladtsx@gmail.com",
     );
 
@@ -23,16 +23,16 @@ describe("chat action extraction", () => {
 
   it("extracts safe contact links and strips sentence punctuation", () => {
     const actions = getChatActions(
-      "Email miladtsx@gmail.com or message https://t.me/sebaesar.",
+      "Email miladtsx@gmail.com or message https://t.me/miloforge.",
       "miladtsx@gmail.com",
     );
 
     expect(actions).toEqual([
       {
-        id: "link:https://t.me/sebaesar",
+        id: "link:https://t.me/miloforge",
         kind: "link",
         label: "Message on Telegram",
-        href: "https://t.me/sebaesar",
+        href: "https://t.me/miloforge",
       },
       {
         id: "email:miladtsx@gmail.com",
@@ -45,7 +45,7 @@ describe("chat action extraction", () => {
 
   it("removes targets from visible text when buttons cover them", () => {
     const content =
-      "Would you like to book a call?\nhttps://cal.com/sebaesar/intro";
+      "Would you like to book a call?\nhttps://cal.com/miloforge/intro";
     const actions = getChatActions(content, "miladtsx@gmail.com");
 
     expect(getChatDisplayContent(content, actions)).toBe(
