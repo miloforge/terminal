@@ -163,20 +163,60 @@
 }
 
 .story-ctaRow {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(168px, 1fr));
+  display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 12px;
-  margin-top: 18px;
-  padding-top: 20px;
-  width: min(100%, 452px);
+  gap: 8px;
+  margin-top: 28px;
+  padding: 10px 16px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--bg, #fff) 72%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+  width: fit-content;
   margin-inline: auto;
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--text) 6%, transparent);
 }
 
-.story-ctaRow .story-cta {
-  margin: 0;
-  width: 100%;
-  max-width: none;
+.story-ctaLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+
+.story-ctaIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--text) 30%, transparent);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: var(--text);
+  opacity: 0.85;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s, transform 0.12s;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.story-ctaIcon:hover,
+.story-ctaIcon:focus-visible {
+  opacity: 1;
+  background: color-mix(in srgb, var(--text) 12%, transparent);
+  border-color: color-mix(in srgb, var(--text) 55%, transparent);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.story-ctaIcon:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #3b82f6) 40%, transparent);
 }
 
 .story-rail {
@@ -358,17 +398,7 @@
     display: none;
   }
 
-  .story-ctaRow {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: min(100%, 360px);
-  }
-
-  .story-ctaRow .story-cta {
-    min-width: 0;
-    padding-inline: 10px;
-  }
-
-  .story-terminalOverlay {
+.story-terminalOverlay {
     padding: 0;
   }
 

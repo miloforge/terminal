@@ -9,6 +9,7 @@ import {
   useTransform,
   type MotionValue,
 } from "motion/react";
+import { CalendarDays, Mail, Send } from "lucide-react";
 import {
   STORY_CHAPTERS,
   STORY_END_YEAR,
@@ -24,7 +25,6 @@ import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import "./story.css";
 
 const BASE = import.meta.env.BASE_URL;
-const RESUME_HREF = `${BASE}files/miladtsx_software_engineer_resume.pdf`;
 const TELEGRAM_HREF = "https://t.me/sebaesar";
 const AVATAR_SRC = `${BASE}images/avatar.jpg`;
 /** viewport-heights of scroll runway per scene — pacing of the scrub */
@@ -208,7 +208,8 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
   useTerminalColors();
 
   // intro + chapters + outro
-  const sceneCount = STORY_CHAPTERS.length + 2;
+  const displayChapters = useMemo(() => [...STORY_CHAPTERS].reverse(), []);
+  const sceneCount = displayChapters.length + 2;
 
   const { scrollYProgress } = useScroll({
     target: trackRef,
@@ -233,14 +234,14 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
   const { glowStops, glowColors } = useMemo(() => {
     const glowStops = [0];
     const glowColors = ["rgba(141, 208, 255, 0.10)"];
-    STORY_CHAPTERS.forEach((chapter, i) => {
+    displayChapters.forEach((chapter, i) => {
       glowStops.push((i + 1.5) / sceneCount);
       glowColors.push(chapter.glow);
     });
     glowStops.push(1);
     glowColors.push("rgba(141, 208, 255, 0.12)");
     return { glowStops, glowColors };
-  }, [sceneCount]);
+  }, [sceneCount, displayChapters]);
   const glowColor = useTransform(scrub, glowStops, glowColors);
   const glow = useMotionTemplate`radial-gradient(880px circle at 50% 22%, ${glowColor}, transparent 70%)`;
 
@@ -404,7 +405,7 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
                 height={84}
               />
               <p className="story-era">
-                {STORY_START_YEAR} → {STORY_END_YEAR}
+                {STORY_END_YEAR} → {STORY_START_YEAR}
               </p>
               <h1 className="story-hook">{STORY_TAGLINE}</h1>
               <p className="story-sub">
@@ -423,7 +424,7 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
             </div>
           </Scene>
 
-          {STORY_CHAPTERS.map((chapter, i) => (
+          {displayChapters.map((chapter, i) => (
             <ChapterScene
               key={chapter.id}
               chapter={chapter}
@@ -455,34 +456,34 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
               <p className="story-sub">
                 {STORY_TAGLINE} Maybe it takes me to you.
               </p>
-              <div className="story-ctaRow">
+              <div className="story-ctaRow" role="group" aria-label="Contact options">
+                <span className="story-ctaLabel" aria-hidden>Reach out:</span>
                 <button
                   type="button"
-                  className="story-cta t-commandLink t-pressable is-secondary"
+                  className="story-ctaIcon t-pressable"
+                  aria-label="Schedule a call"
+                  title="Schedule a call"
                   onClick={onBookCall}
                 >
-                  <span className="t-commandLabel">Schedule call</span>
+                  <CalendarDays size={18} strokeWidth={1.5} aria-hidden />
                 </button>
                 <a
-                  className="story-cta t-commandLink t-pressable is-secondary"
+                  className="story-ctaIcon t-pressable"
                   href={emailHref}
+                  aria-label="Send me an email"
+                  title="Send me an email"
                 >
-                  <span className="t-commandLabel">Email me</span>
+                  <Mail size={18} strokeWidth={1.5} aria-hidden />
                 </a>
                 <a
                   href={TELEGRAM_HREF}
                   target="_blank"
                   rel="noreferrer"
-                  className="story-cta t-commandLink t-pressable is-secondary"
+                  className="story-ctaIcon t-pressable"
+                  aria-label="DM me on Telegram"
+                  title="DM me on Telegram"
                 >
-                  <span className="t-commandLabel">DM on Telegram</span>
-                </a>
-                <a
-                  className="story-cta t-commandLink t-pressable is-secondary"
-                  href={RESUME_HREF}
-                  download
-                >
-                  <span className="t-commandLabel">Download résumé</span>
+                  <Send size={18} strokeWidth={1.5} aria-hidden />
                 </a>
               </div>
             </div>
@@ -496,7 +497,7 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
                   ? "Intro"
                   : i === sceneCount - 1
                     ? "Now"
-                    : STORY_CHAPTERS[i - 1].year;
+                    : displayChapters[i - 1].year;
               return (
                 <button
                   key={label + i}
@@ -514,14 +515,14 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
 
           {/* time axis: past ⟷ future */}
           <div className="story-timeline" aria-hidden>
-            <span className="story-timelineYear">{STORY_START_YEAR}</span>
+            <span className="story-timelineYear">{STORY_END_YEAR}</span>
             <div className="story-timelineBar">
               <motion.div
                 className="story-timelineFill"
                 style={{ scaleX: timelineScale }}
               />
             </div>
-            <span className="story-timelineYear">{STORY_END_YEAR}</span>
+            <span className="story-timelineYear">{STORY_START_YEAR}</span>
           </div>
         </div>
       </div>
