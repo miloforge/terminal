@@ -19,6 +19,8 @@ import "./chat.css";
 
 const CHAT_LAUNCHER_DELAY_MS = 3_000;
 const CHAT_LAUNCHER_AVATAR = "images/avatar.jpg";
+const CHAT_MAXIMIZE_TOP_THRESHOLD_PX = 12;
+const CHAT_RESTORE_DRAG_THRESHOLD_PX = 8;
 
 const SUGGESTED_PROMPTS = [
   "Can you turn my uncertainty into an execution plan?",
@@ -80,6 +82,7 @@ export function ChatDock({
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
   const [isMaximized, setIsMaximized] = useState(false);
   const [showLauncher, setShowLauncher] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -152,13 +155,20 @@ export function ChatDock({
   const endDrag = (event?: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging) return;
     if (event?.currentTarget && activePointerRef.current !== null) {
-      event.currentTarget.releasePointerCapture(activePointerRef.current);
+      if (event.currentTarget.hasPointerCapture(activePointerRef.current)) {
+        event.currentTarget.releasePointerCapture(activePointerRef.current);
+      }
+    }
+    if (!isMaximized && wrapRef.current) {
+      const rect = wrapRef.current.getBoundingClientRect();
+      if (rect.top <= CHAT_MAXIMIZE_TOP_THRESHOLD_PX) {
+        setIsMaximized(true);
+      }
     }
     resetDragState();
   };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (isMaximized) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
     const target = event.target;
     if (target instanceof Element && target.closest("button")) return;
@@ -174,6 +184,21 @@ export function ChatDock({
     const deltaX = event.clientX - dragStartRef.current.x;
     const deltaY = event.clientY - dragStartRef.current.y;
     if (deltaX === 0 && deltaY === 0) return;
+    if (
+      isMaximized &&
+      Math.hypot(deltaX, deltaY) >= CHAT_RESTORE_DRAG_THRESHOLD_PX
+    ) {
+      setIsMaximized(false);
+      setDragOffset({ x: 0, y: 0 });
+      if (
+        activePointerRef.current !== null &&
+        event.currentTarget.hasPointerCapture(activePointerRef.current)
+      ) {
+        event.currentTarget.releasePointerCapture(activePointerRef.current);
+      }
+      resetDragState();
+      return;
+    }
     setDragOffset((prev) => ({
       x: prev.x + deltaX,
       y: prev.y + deltaY,
@@ -372,6 +397,7 @@ export function ChatDock({
       ) : null}
       {isOpen && !isMinimized ? (
         <div
+          ref={wrapRef}
           className={`chat-wrap${isMaximized ? " is-maximized" : ""}`}
           role="dialog"
           aria-modal="false"
