@@ -295,7 +295,7 @@ export function ChatDock({
             aria-labelledby="chat-suggestions-label"
           >
             <span id="chat-suggestions-label" className="chat-suggestions-title">
-              Suggested prompts
+              Common questions
             </span>
             <div className="chat-suggestionList">
               {SUGGESTED_PROMPTS.map((prompt) => (
