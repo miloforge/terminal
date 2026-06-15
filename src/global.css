@@ -4772,6 +4772,35 @@ a.blog-backLink:hover {
   max-width: 60ch;
 }
 
+.blog-comments {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+.blog-comments h2 {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  color: var(--blog-text);
+}
+
+.blog-commentsEmbed {
+  min-height: 320px;
+  color-scheme: light;
+}
+
+.blog-commentsEmbed .utterances {
+  min-height: 320px;
+  max-width: 100%;
+  margin: 0;
+}
+
+.blog-commentsEmbed .utterances-frame {
+  color-scheme: light;
+}
+
 /* Outline / TOC */
 
 .blog-outline {

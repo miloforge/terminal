@@ -12,7 +12,7 @@ const ROOT = process.cwd();
 const BLOG_DIR = path.join(ROOT, "src", "data", "blogs");
 const DIST_DIR = path.join(ROOT, "dist");
 const BASE_PATH = process.env.BASE_PATH || "/terminal/";
-const BLOG_COMMENTS_REPO = "failuresmith/terminal";
+const BLOG_COMMENTS_REPO = "milaforge/terminal";
 const BLOG_COMMENTS_ISSUE_TERM = "pathname";
 const BLOG_TAG_PARAM = "tag";
 

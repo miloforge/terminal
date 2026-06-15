@@ -10,7 +10,7 @@ describe("blog comments", () => {
       src: "https://utteranc.es/client.js",
       crossorigin: "anonymous",
       async: "true",
-      repo: "failuresmith/terminal",
+      repo: "milaforge/terminal",
       "issue-term": "pathname",
       label: "blog-comment",
       theme: "github-light",

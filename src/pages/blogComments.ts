@@ -1,5 +1,5 @@
 export const BLOG_COMMENTS_SCRIPT_SRC = "https://utteranc.es/client.js";
-export const BLOG_COMMENTS_REPO = "failuresmith/terminal";
+export const BLOG_COMMENTS_REPO = "milaforge/terminal";
 
 export const BLOG_COMMENTS_ATTRIBUTES = {
   repo: BLOG_COMMENTS_REPO,
