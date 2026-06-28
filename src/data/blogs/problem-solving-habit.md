@@ -42,7 +42,7 @@ I could not rewrite the contract. I had to understand its existing rules and sat
 
 The contract behavior could be reduced to this:
 
-```text
+```sol
 flag():
     return stored_address
 

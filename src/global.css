@@ -3057,6 +3057,73 @@
     margin: 10px 0;
   }
 
+  .t-markdownBody pre code {
+    display: block;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: inherit;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  .t-markdownBody .hljs-keyword,
+  .t-markdownBody .hljs-selector-tag,
+  .t-markdownBody .hljs-built_in {
+    color: #8dd0ff;
+  }
+
+  .t-markdownBody .hljs-string,
+  .t-markdownBody .hljs-title,
+  .t-markdownBody .hljs-name {
+    color: #a7e0a2;
+  }
+
+  .t-markdownBody .hljs-number,
+  .t-markdownBody .hljs-literal,
+  .t-markdownBody .hljs-attr {
+    color: #f1c27d;
+  }
+
+  .t-markdownBody .hljs-comment {
+    color: rgba(234, 241, 251, 0.48);
+    font-style: italic;
+  }
+
+  .t-markdownTable {
+    max-width: 100%;
+    overflow-x: auto;
+    margin: 18px 0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+  }
+
+  .t-markdownBody table {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: collapse;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .t-markdownBody th,
+  .t-markdownBody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    vertical-align: top;
+    text-align: left;
+  }
+
+  .t-markdownBody th {
+    color: var(--blog-text);
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 700;
+  }
+
+  .t-markdownBody tr:last-child td {
+    border-bottom: 0;
+  }
+
   .t-work {
     margin: 10px 0 14px;
   }
@@ -4895,9 +4962,49 @@ a.blog-backLink:hover {
   color: #2a2a2a;
 }
 
+.blog-page.is-light .t-markdownBody pre code {
+  background: transparent;
+}
+
+.blog-page.is-light .t-markdownBody .hljs-keyword,
+.blog-page.is-light .t-markdownBody .hljs-selector-tag,
+.blog-page.is-light .t-markdownBody .hljs-built_in {
+  color: #0f5f8d;
+}
+
+.blog-page.is-light .t-markdownBody .hljs-string,
+.blog-page.is-light .t-markdownBody .hljs-title,
+.blog-page.is-light .t-markdownBody .hljs-name {
+  color: #247333;
+}
+
+.blog-page.is-light .t-markdownBody .hljs-number,
+.blog-page.is-light .t-markdownBody .hljs-literal,
+.blog-page.is-light .t-markdownBody .hljs-attr {
+  color: #8a5200;
+}
+
+.blog-page.is-light .t-markdownBody .hljs-comment {
+  color: rgba(26, 26, 26, 0.5);
+}
+
 .blog-page.is-light .t-markdownBody blockquote {
   border-left-color: rgba(26, 26, 26, 0.2);
   color: rgba(26, 26, 26, 0.65);
+}
+
+.blog-page.is-light .t-markdownTable {
+  border-color: rgba(26, 26, 26, 0.12);
+}
+
+.blog-page.is-light .t-markdownBody th,
+.blog-page.is-light .t-markdownBody td {
+  border-bottom-color: rgba(26, 26, 26, 0.1);
+}
+
+.blog-page.is-light .t-markdownBody th {
+  color: #111;
+  background: rgba(26, 26, 26, 0.05);
 }
 
 /* Responsive: hide outline below 900px */

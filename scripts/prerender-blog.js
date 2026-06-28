@@ -74,6 +74,8 @@ function highlightCode(code, infostring) {
 
 const renderer = new marked.Renderer();
 renderer.code = (code, infostring) => highlightCode(code, infostring);
+renderer.table = (header, body) =>
+  `<div class="t-markdownTable"><table>\n<thead>\n${header}</thead>\n<tbody>\n${body}</tbody>\n</table></div>\n`;
 
 marked.setOptions({
   gfm: true,

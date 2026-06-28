@@ -1,11 +1,76 @@
 import { useEffect, useState } from "react";
 import { marked } from "marked";
+import hljs from "highlight.js/lib/core";
+import bash from "highlight.js/lib/languages/bash";
+import javascript from "highlight.js/lib/languages/javascript";
+import python from "highlight.js/lib/languages/python";
+import typescript from "highlight.js/lib/languages/typescript";
 import { MarkdownSegment } from "@types";
+
+hljs.registerLanguage("bash", bash);
+hljs.registerLanguage("javascript", javascript);
+hljs.registerLanguage("python", python);
+hljs.registerLanguage("typescript", typescript);
+
+const LANGUAGE_ALIASES: Record<string, string> = {
+  js: "javascript",
+  sh: "bash",
+  shell: "bash",
+  sol: "javascript",
+  solidity: "javascript",
+  ts: "typescript",
+};
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function normalizeLanguage(infostring?: string) {
+  const raw = String(infostring || "").trim().split(/\s+/)[0]?.toLowerCase() || "";
+  const highlightAs = LANGUAGE_ALIASES[raw] || raw;
+  if (
+    !highlightAs ||
+    highlightAs === "text" ||
+    highlightAs === "txt" ||
+    highlightAs === "plaintext"
+  ) {
+    return { raw };
+  }
+
+  return hljs.getLanguage(highlightAs) ? { raw, highlightAs } : { raw };
+}
+
+function highlightCode(code: string, infostring?: string) {
+  const { raw, highlightAs } = normalizeLanguage(infostring);
+  const className = raw ? `hljs language-${escapeHtml(raw)}` : "hljs";
+
+  if (!highlightAs) {
+    return `<pre><code class="${className}">${escapeHtml(code)}</code></pre>\n`;
+  }
+
+  const highlighted = hljs.highlight(code, {
+    language: highlightAs,
+    ignoreIllegals: true,
+  }).value;
+
+  return `<pre><code class="${className}">${highlighted}</code></pre>\n`;
+}
+
+const renderer = new marked.Renderer();
+renderer.code = (code, infostring) => highlightCode(code, infostring);
+renderer.table = (header, body) =>
+  `<div class="t-markdownTable"><table>\n<thead>\n${header}</thead>\n<tbody>\n${body}</tbody>\n</table></div>\n`;
 
 // Centralized markdown renderer used for blog content and log bodies.
 marked.setOptions({
   gfm: true,
   breaks: false,
+  renderer,
 });
 
 export function renderMarkdown(markdown: string): Promise<string> {
