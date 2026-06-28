@@ -34,11 +34,13 @@ const SUGGESTED_PROMPTS = [
 type ChatDockProps = {
   onBookCall?: () => void;
   contactEmail?: string;
+  hideLauncher?: boolean;
 };
 
 export function ChatDock({
   onBookCall,
   contactEmail = "milaforge@proton.me",
+  hideLauncher = false,
 }: ChatDockProps) {
   // Select all needed slices in one selector and shallow-compare to cut down on re-renders.
   const {
@@ -373,7 +375,7 @@ export function ChatDock({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const shouldShowLauncher = showLauncher && (!isOpen || isMinimized);
+  const shouldShowLauncher = !hideLauncher && showLauncher && (!isOpen || isMinimized);
 
   return (
     <>

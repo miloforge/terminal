@@ -47,32 +47,6 @@
   animation: chat-launcher-in 220ms ease-out both;
 }
 
-.chat-launcher::before,
-.chat-launcher::after {
-  content: "";
-  position: absolute;
-  inset: -7px;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-.chat-launcher::before {
-  border: 1px solid color-mix(in srgb, var(--accent, #8dd0ff) 44%, transparent);
-  opacity: 0;
-  animation: chat-launcher-pulse 1.6s ease-out 150ms infinite;
-}
-
-.chat-launcher::after {
-  inset: 5px;
-  background:
-    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent, #8dd0ff) 12%, transparent), transparent 46%),
-    conic-gradient(from 38deg, transparent 0deg, color-mix(in srgb, var(--accent, #8dd0ff) 18%, transparent) 14deg, transparent 32deg);
-  filter: blur(2px);
-  opacity: 0.22;
-  animation: chat-launcher-beam 5.4s linear infinite;
-  z-index: -1;
-}
-
 .chat-launcher:hover,
 .chat-launcher:focus-visible {
   background: var(--press-hover-bg);
@@ -89,7 +63,6 @@
   border: 1px solid color-mix(in srgb, var(--accent, #8dd0ff) 48%, rgba(255, 255, 255, 0.26));
   background: color-mix(in srgb, var(--card, rgba(255, 255, 255, 0.08)) 85%, transparent);
   display: block;
-  animation: chat-launcher-breathe 3.6s ease-in-out 220ms infinite;
 }
 
 .chat-launcherPhoto img {
@@ -129,6 +102,16 @@
   box-shadow: 0 0 0 1px color-mix(in srgb, #2ed36b 48%, transparent);
 }
 
+.chat-launcherStatus::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, #2ed36b 70%, transparent);
+  animation: chat-status-wave 1.7s ease-out 160ms infinite;
+  pointer-events: none;
+}
+
 @keyframes chat-launcher-in {
   from {
     opacity: 0;
@@ -140,17 +123,7 @@
   }
 }
 
-@keyframes chat-launcher-breathe {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-1px) scale(1.045);
-  }
-}
-
-@keyframes chat-launcher-pulse {
+@keyframes chat-status-wave {
   0% {
     opacity: 0;
     transform: scale(0.9);
@@ -160,13 +133,7 @@
   }
   100% {
     opacity: 0;
-    transform: scale(1.05);
-  }
-}
-
-@keyframes chat-launcher-beam {
-  to {
-    transform: rotate(360deg);
+    transform: scale(2.7);
   }
 }
 
@@ -648,9 +615,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .chat-launcher,
-  .chat-launcherPhoto,
-  .chat-launcher::before,
-  .chat-launcher::after {
+  .chat-launcherStatus::after {
     animation: none;
   }
 }

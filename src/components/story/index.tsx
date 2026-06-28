@@ -20,6 +20,7 @@ import {
 import Terminal from "@components/terminal";
 import ChatDock from "@components/terminal/chat";
 import { useTerminalColors } from "@hooks/useTerminalColors";
+import { openChat } from "@stores/chatStore";
 import type { ContactInfo } from "@types";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import "./story.css";
@@ -397,13 +398,21 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
             className="is-intro"
           >
             <div className="story-chapter story-intro">
-              <img
-                className="story-avatar"
-                src={AVATAR_SRC}
-                alt="Portrait of Milad"
-                width={84}
-                height={84}
-              />
+              <button
+                type="button"
+                className="story-avatarButton"
+                aria-label="Open chatbot"
+                onClick={openChat}
+              >
+                <img
+                  className="story-avatar"
+                  src={AVATAR_SRC}
+                  alt="Portrait of Milad"
+                  width={84}
+                  height={84}
+                />
+                <span className="story-avatarStatus" aria-hidden="true" />
+              </button>
               <p className="story-era">
                 {STORY_END_YEAR} → {STORY_START_YEAR}
               </p>
@@ -582,6 +591,7 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
       <ChatDock
         onBookCall={onBookCall}
         contactEmail={contact?.email}
+        hideLauncher
       />
     </div>
   );
