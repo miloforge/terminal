@@ -1469,7 +1469,6 @@ An investor-ready MVP shipped in 10 days for under $300, avoiding a larger upfro
               {
                 type: "work",
                 items: orderedCaseStudies,
-                clientProof: selectedCasesClientProof,
               },
             ],
           ];

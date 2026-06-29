@@ -1283,7 +1283,7 @@
     text-align: center;
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientGrid {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientGrid {
     display: grid;
     grid-template-columns: repeat(8, minmax(0, 1fr));
     justify-content: center;
@@ -1294,24 +1294,24 @@
     overflow: visible;
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientSlot {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientSlot {
     display: block;
     min-width: 0;
     overflow: visible;
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientSlot:first-child .intro-clientItem {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientSlot:first-child .intro-clientItem {
     --intro-tooltip-left: 0;
     --intro-tooltip-shift: 0;
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientSlot:last-child .intro-clientItem {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientSlot:last-child .intro-clientItem {
     --intro-tooltip-left: auto;
     --intro-tooltip-right: 0;
     --intro-tooltip-shift: 0;
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientItem {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientItem {
     --intro-client-border: color-mix(in srgb, var(--border) 72%, var(--accent) 28%);
     --intro-client-bg: color-mix(in srgb, var(--surface) 78%, transparent);
     --intro-client-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -1342,7 +1342,7 @@
       filter 160ms ease;
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientItem::before {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientItem::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -1357,8 +1357,8 @@
       box-shadow 160ms ease;
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientItem:hover,
-  :is(.intro-start-line, .t-work) .intro-clientItem:focus-visible {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientItem:hover,
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientItem:focus-visible {
     --intro-client-border: color-mix(in srgb, var(--accent) 70%, var(--border) 30%);
     --intro-client-bg: color-mix(in srgb, var(--surface) 64%, var(--accent) 12%);
     --intro-client-shadow:
@@ -1368,12 +1368,12 @@
     transform: translateY(-2px);
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientItem:focus-visible {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientItem:focus-visible {
     outline: 2px solid color-mix(in srgb, var(--accent) 72%, transparent);
     outline-offset: 3px;
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientItem img {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientItem img {
     position: relative;
     z-index: 1;
     display: block;
@@ -1389,14 +1389,14 @@
       transform 160ms ease;
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientItem:hover img,
-  :is(.intro-start-line, .t-work) .intro-clientItem:focus-visible img {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientItem:hover img,
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientItem:focus-visible img {
     opacity: 1;
     filter: none;
     transform: translateY(-1px);
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientTooltip {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientTooltip {
     position: absolute;
     top: calc(100% + 10px);
     left: var(--intro-tooltip-left);
@@ -1425,7 +1425,7 @@
       transform 140ms ease;
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientTooltip::before {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientTooltip::before {
     content: "";
     position: absolute;
     top: -6px;
@@ -1438,35 +1438,41 @@
     transform: translateX(-50%) rotate(45deg);
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientItem:hover .intro-clientTooltip,
-  :is(.intro-start-line, .t-work) .intro-clientItem:focus-visible .intro-clientTooltip {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientItem:hover .intro-clientTooltip,
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientItem:focus-visible .intro-clientTooltip {
     opacity: 1;
     visibility: visible;
     transform: translate(var(--intro-tooltip-shift), 0);
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientTooltipTitle,
-  :is(.intro-start-line, .t-work) .intro-clientTooltipRow {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientTooltipTitle,
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientTooltipRow {
     display: block;
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientTooltipTitle {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientTooltipTitle {
     font-size: 13px;
     font-weight: 800;
     color: var(--text);
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientTooltipRow {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientTooltipRow {
     color: color-mix(in srgb, var(--text) 88%, var(--muted) 12%);
   }
 
-  :is(.intro-start-line, .t-work) .intro-clientTooltipRow strong {
+  :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientTooltipRow strong {
     display: block;
     margin-bottom: 2px;
     color: var(--accent);
     font-size: 11px;
     letter-spacing: 0.18px;
     text-transform: uppercase;
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientTooltip {
+      display: none;
+    }
   }
 
   .intro-clientModal {
@@ -1533,6 +1539,10 @@
     font-size: 16px;
     font-weight: 800;
     line-height: 1.3;
+  }
+
+  .intro-clientModalDomain {
+    font-size: x-small;
   }
 
   .intro-clientModalRow {

@@ -21,6 +21,7 @@ export interface TerminalProps {
   appearanceController?: AppearanceController;
   controllerMode?: "main" | "embedded";
   showAskAi?: boolean;
+  startupCommand?: CommandButton;
 }
 
 export type AppearanceController = {
@@ -123,8 +124,8 @@ export type ClientProofItem = {
   slug: string;
   name: string;
   logoPath: string;
-  mission: string;
-  outcome: string;
+  domain: string;
+  proof: string;
 };
 
 export type ClientProofSegment = {

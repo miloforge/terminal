@@ -16,12 +16,11 @@ describe("client proof intro data", () => {
     ).toBe(true);
   });
 
-  it("keeps mission and outcome text available for tooltips and dialogs", () => {
+  it("keeps domain and proof text available for tooltips and dialogs", () => {
     CLIENT_PROOF_ITEMS.forEach((item) => {
-      expect(item.mission.length).toBeGreaterThan(12);
-      expect(item.outcome.length).toBeGreaterThan(12);
-      expect(getClientProofAriaLabel(item)).toContain("Mission:");
-      expect(getClientProofAriaLabel(item)).toContain("Outcome:");
+      expect(item.proof.length).toBeGreaterThan(12);
+      expect(getClientProofAriaLabel(item)).toContain("Domain:");
+      expect(getClientProofAriaLabel(item)).toContain("Proof:");
     });
   });
 });

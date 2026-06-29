@@ -73,6 +73,7 @@ export default function Terminal(props: TerminalProps) {
   const [caretStyle, setCaretStyle] = useState<React.CSSProperties | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<number | null>(null);
+  const executedStartupCommandRef = useRef<string | null>(null);
   const showInput = showIntroInput;
   const introRange = introStartLineRange;
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -448,6 +449,15 @@ export default function Terminal(props: TerminalProps) {
     },
     [markTyping, handleKeyDown],
   );
+
+  useEffect(() => {
+    if (!props.startupCommand || !ready) return;
+    if (executedStartupCommandRef.current === props.startupCommand.command) return;
+    executedStartupCommandRef.current = props.startupCommand.command;
+    executeCommand(props.startupCommand.command, {
+      typing: props.startupCommand.typing ?? "simulate",
+    });
+  }, [executeCommand, props.startupCommand, ready]);
 
   return (
     <div

@@ -9,7 +9,6 @@ import {
   useTransform,
   type MotionValue,
 } from "motion/react";
-import { CalendarDays, Mail, Send } from "lucide-react";
 import {
   STORY_CHAPTERS,
   STORY_END_YEAR,
@@ -17,22 +16,28 @@ import {
   STORY_TAGLINE,
   type StoryChapter,
 } from "@data/storyChapters";
+import { CLIENT_PROOF_ITEMS } from "@data/clientProof";
+import { ClientProofStrip } from "@components/ClientProofStrip";
 import Terminal from "@components/terminal";
 import ChatDock from "@components/terminal/chat";
 import { useTerminalColors } from "@hooks/useTerminalColors";
 import { openChat } from "@stores/chatStore";
-import type { ContactInfo } from "@types";
+import type { CommandButton, ContactInfo } from "@types";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import "./story.css";
 
 const BASE = import.meta.env.BASE_URL;
-const TELEGRAM_HREF = "https://t.me/milaforge";
 const AVATAR_SRC = `${BASE}images/avatar.jpg`;
 /** viewport-heights of scroll runway per scene — pacing of the scrub */
 const VH_PER_SCENE = 110;
 const MENU_WIDTH = 240;
 const MENU_HEIGHT = 48;
 const MENU_MARGIN = 6;
+const STORY_CLIENT_PROOF_LIMIT = 8;
+const SELECTED_WORK_COMMAND: CommandButton = {
+  command: "selected_cases",
+  typing: "simulate",
+};
 
 type StoryPageProps = {
   onBookCall: () => void;
@@ -191,18 +196,32 @@ function ChapterScene({
   );
 }
 
+function StoryClientProof() {
+  const clientProof = {
+    type: "clientProof" as const,
+    items: CLIENT_PROOF_ITEMS.slice(0, STORY_CLIENT_PROOF_LIMIT),
+  };
+
+  return (
+    <div className="story-clientProof">
+      <p className="story-clientProofText">
+        Trusted with systems that had to work:
+      </p>
+      <ClientProofStrip segment={clientProof} />
+    </div>
+  );
+}
+
 export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion() ?? false;
-  const contactEmail = contact?.email ?? "milaforge@proton.me";
-  const emailHref = `mailto:${contactEmail}?subject=${encodeURIComponent(
-    "Let’s build this to last",
-  )}`;
   const [activeScene, setActiveScene] = useState(0);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(
     null,
   );
   const [terminalOpen, setTerminalOpen] = useState(false);
+  const [terminalStartupCommand, setTerminalStartupCommand] =
+    useState<CommandButton | null>(null);
 
   // apply the persisted terminal color theme so :root carries valid color
   // values (the stylesheet default --accent is an HSL triple, not a color)
@@ -307,6 +326,15 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
   };
 
   const closeContextMenu = () => setContextMenu(null);
+  const isOutroScene = activeScene === sceneCount - 1;
+  const openTerminal = (startupCommand?: CommandButton) => {
+    setTerminalStartupCommand(startupCommand ?? null);
+    setTerminalOpen(true);
+  };
+  const closeTerminal = () => {
+    setTerminalOpen(false);
+    setTerminalStartupCommand(null);
+  };
 
   useEffect(() => {
     if (!contextMenu) return;
@@ -368,13 +396,35 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
     <div className="story-root" onContextMenu={handleContextMenu}>
       <header className="story-topbar">
         <span className="story-brand">Milad</span>
-        <button
-          type="button"
-          className="story-skip t-commandLink t-pressable is-secondary"
-          onClick={() => jumpToScene(sceneCount - 1)}
-        >
-          <span className="t-commandLabel">Let's talk</span>
-        </button>
+        {isOutroScene ? (
+          <nav className="story-outroNav" aria-label="Closing scene navigation">
+            <button
+              type="button"
+              className="story-navLink"
+              onClick={() => openTerminal()}
+            >
+              Work
+            </button>
+            <a className="story-navLink" href={`${BASE}blog/`}>
+              Writing
+            </a>
+            <button
+              type="button"
+              className="story-navCta"
+              onClick={onBookCall}
+            >
+              Discuss a problem
+            </button>
+          </nav>
+        ) : (
+          <button
+            type="button"
+            className="story-skip t-commandLink t-pressable is-secondary"
+            onClick={() => jumpToScene(sceneCount - 1)}
+          >
+            <span className="t-commandLabel">Let's talk</span>
+          </button>
+        )}
       </header>
 
       <div
@@ -456,89 +506,90 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
               progress={scrub}
               index={sceneCount - 1}
               count={sceneCount}
-              year="?"
+              year=""
               reduced={reduced}
             />
             <div className="story-chapter story-outro">
-              <p className="story-era">{STORY_END_YEAR} → ?</p>
-              <h2 className="story-hook">The next chapter is unwritten.</h2>
-              <p className="story-sub">
-                {STORY_TAGLINE} Maybe it takes me to you.
+              <p className="story-outroEyebrow">
+                SOFTWARE RELIABILITY
               </p>
-              <a
-                href={`${BASE}blog/`}
-                className="story-blogLink"
-              >
-                Read my writing →
-              </a>
-              <div className="story-ctaRow" role="group" aria-label="Contact options">
-                <span className="story-ctaLabel" aria-hidden>Reach out:</span>
+              <h2 className="story-hook">
+                Bring me the system
+                <br />
+                you don’t trust.
+              </h2>
+              <p className="story-sub story-outroSub">
+                I investigate how systems fail,
+                then turn those failures into predictable outcomes.
+              </p>
+              <div className="story-outroActions">
                 <button
                   type="button"
-                  className="story-ctaIcon t-pressable"
-                  aria-label="Schedule a call"
-                  title="Schedule a call"
+                  className="story-primaryCta"
                   onClick={onBookCall}
                 >
-                  <CalendarDays size={18} strokeWidth={1.5} aria-hidden />
+                  Discuss a system →
                 </button>
-                <a
-                  className="story-ctaIcon t-pressable"
-                  href={emailHref}
-                  aria-label="Send me an email"
-                  title="Send me an email"
+                <button
+                  type="button"
+                  className="story-secondaryCta"
+                  onClick={() => openTerminal(SELECTED_WORK_COMMAND)}
                 >
-                  <Mail size={18} strokeWidth={1.5} aria-hidden />
-                </a>
-                <a
-                  href={TELEGRAM_HREF}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="story-ctaIcon t-pressable"
-                  aria-label="DM me on Telegram"
-                  title="DM me on Telegram"
-                >
-                  <Send size={18} strokeWidth={1.5} aria-hidden />
-                </a>
+                  View selected work
+                </button>
               </div>
+              <StoryClientProof />
             </div>
           </Scene>
 
-          {/* chapter rail */}
-          <nav className="story-rail" aria-label="Story chapters">
-            {Array.from({ length: sceneCount }, (_, i) => {
-              const label =
-                i === 0
-                  ? "Intro"
-                  : i === sceneCount - 1
-                    ? "Now"
-                    : displayChapters[i - 1].year;
-              return (
-                <button
-                  key={label + i}
-                  type="button"
-                  className={`story-railDot${i === activeScene ? " is-active" : ""}`}
-                  aria-label={`Jump to ${label}`}
-                  aria-current={i === activeScene ? "step" : undefined}
-                  onClick={() => jumpToScene(i)}
-                >
-                  <span className="story-railLabel">{label}</span>
-                </button>
-              );
-            })}
-          </nav>
-
-          {/* time axis: past ⟷ future */}
-          <div className="story-timeline" aria-hidden>
-            <span className="story-timelineYear">{STORY_END_YEAR}</span>
-            <div className="story-timelineBar">
-              <motion.div
-                className="story-timelineFill"
-                style={{ scaleX: timelineScale }}
-              />
+          {isOutroScene ? (
+            <div className="story-nextTimeline" aria-hidden>
+              <span className="story-nextTimelineYear">{STORY_START_YEAR}</span>
+              <span className="story-nextTimelineLine" />
+              <span className="story-nextTimelineYear">{STORY_END_YEAR}</span>
+              <span className="story-nextTimelineShortLine" />
+              <span className="story-nextTimelineDot" />
+              <span className="story-nextTimelineLabel">NEXT</span>
             </div>
-            <span className="story-timelineYear">{STORY_START_YEAR}</span>
-          </div>
+          ) : (
+            <>
+              {/* chapter rail */}
+              <nav className="story-rail" aria-label="Story chapters">
+                {Array.from({ length: sceneCount }, (_, i) => {
+                  const label =
+                    i === 0
+                      ? "Intro"
+                      : i === sceneCount - 1
+                        ? "Now"
+                        : displayChapters[i - 1].year;
+                  return (
+                    <button
+                      key={label + i}
+                      type="button"
+                      className={`story-railDot${i === activeScene ? " is-active" : ""}`}
+                      aria-label={`Jump to ${label}`}
+                      aria-current={i === activeScene ? "step" : undefined}
+                      onClick={() => jumpToScene(i)}
+                    >
+                      <span className="story-railLabel">{label}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+
+              {/* time axis: past <-> future */}
+              <div className="story-timeline" aria-hidden>
+                <span className="story-timelineYear">{STORY_END_YEAR}</span>
+                <div className="story-timelineBar">
+                  <motion.div
+                    className="story-timelineFill"
+                    style={{ scaleX: timelineScale }}
+                  />
+                </div>
+                <span className="story-timelineYear">{STORY_START_YEAR}</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
       {contextMenu ? (
@@ -552,7 +603,7 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
             type="button"
             className="t-contextMenuItem t-pressable"
             onClick={() => {
-              setTerminalOpen(true);
+              openTerminal();
               closeContextMenu();
             }}
           >
@@ -572,7 +623,7 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
             <button
               type="button"
               className="story-terminalClose t-pressable"
-              onClick={() => setTerminalOpen(false)}
+              onClick={closeTerminal}
               aria-label="Close terminal"
             >
               Close
@@ -583,6 +634,7 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
                 onBookCall={onBookCall}
                 controllerMode="embedded"
                 showAskAi={false}
+                startupCommand={terminalStartupCommand ?? undefined}
               />
             </div>
           </div>
