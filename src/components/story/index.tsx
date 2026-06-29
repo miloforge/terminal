@@ -23,6 +23,7 @@ import ChatDock from "@components/terminal/chat";
 import { useTerminalColors } from "@hooks/useTerminalColors";
 import { openChat } from "@stores/chatStore";
 import type { CommandButton, ContactInfo } from "@types";
+import { SquareTerminal } from "lucide-react";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import "./story.css";
 
@@ -400,10 +401,11 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
           <nav className="story-outroNav" aria-label="Closing scene navigation">
             <button
               type="button"
-              className="story-navLink"
+              className="story-navLink story-navIcon"
               onClick={() => openTerminal()}
+              aria-label="Open terminal"
             >
-              Work
+              <SquareTerminal size={18} strokeWidth={2} aria-hidden="true" />
             </button>
             <a className="story-navLink" href={`${BASE}blog/`}>
               Writing
