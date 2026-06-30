@@ -93,3 +93,6 @@ If you want it to feel organic: weave these elements into the product UI (status
 
 [] recommendations 
     Roya, Andrei, Erfan : Milad takes ownership, figures things out, and get things done.
+
+[] add a warm disclaimer about why the chatbot is slow
+    because its self funded and thanks to cloudflare's free-tier.
