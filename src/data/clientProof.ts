@@ -1,7 +1,7 @@
 import type { ClientProofItem } from "@types";
 
 export const CLIENT_PROOF_TITLE =
-  "Trusted across fintech, Web3, security, travel, banking, and AI products.";
+  "Trusted by leaders ";
 
 export const CLIENT_PROOF_ITEMS: ClientProofItem[] = [
   {
