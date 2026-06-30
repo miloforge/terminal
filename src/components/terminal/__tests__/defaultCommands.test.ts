@@ -294,6 +294,8 @@ describe("default commands", () => {
       registry,
     });
     expect(JSON.stringify(listOut)).toContain("Release Gates for Live Funds");
+    expect(JSON.stringify(listOut)).toContain("VENT Finance");
+    expect(JSON.stringify(listOut)).toContain("Saman Bank");
     const listLines = Array.isArray(listOut) ? listOut : [listOut];
     const workLine = listLines.find(
       (line): line is TerminalLine => Array.isArray(line),
@@ -302,7 +304,7 @@ describe("default commands", () => {
       (segment): segment is Extract<TerminalLine[number], { type: "work" }> =>
         segment.type === "work",
     );
-    expect(workSegment?.clientProof?.title).toBe("Experiences");
+    expect(workSegment?.clientProof?.title).toBe("Trusted by leaders ");
     expect(workSegment?.clientProof?.items).toHaveLength(8);
 
     const readOut = await selectedCasesHandler?.({

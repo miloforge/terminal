@@ -72,6 +72,9 @@ const selectedCasesClientProof: ClientProofSegment = {
   title: CLIENT_PROOF_TITLE,
   items: CLIENT_PROOF_ITEMS,
 };
+const selectedCasesClientNames = CLIENT_PROOF_ITEMS.map((item) => item.name).join(
+  " · ",
+);
 
 const createTextSegment = (text: string): TextSegment => ({
   type: "text",
@@ -1469,6 +1472,7 @@ An investor-ready MVP shipped in 10 days for under $300, avoiding a larger upfro
               {
                 type: "work",
                 items: orderedCaseStudies,
+                clientProof: selectedCasesClientProof,
               },
             ],
           ];
@@ -1481,10 +1485,12 @@ An investor-ready MVP shipped in 10 days for under $300, avoiding a larger upfro
           if (!entry) return [`no selected case found for "${target}"`];
           return [
             entry.title,
+            `Clients: ${selectedCasesClientNames}`,
             [
               {
                 type: "work",
                 items: [entry],
+                clientProof: selectedCasesClientProof,
               },
             ],
           ];
