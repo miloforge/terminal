@@ -8,24 +8,18 @@ type BookingOverlayProps = {
 
 export function BookingOverlay({ open, onClose, email }: BookingOverlayProps) {
   const [loading, setLoading] = useState(true);
-  const [showFallback, setShowFallback] = useState(false);
   const embedRef = useRef<HTMLDivElement | null>(null);
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
   const prevFocusRef = useRef<Element | null>(null);
-  const fallbackPrimaryRef = useRef<HTMLAnchorElement | null>(null);
-  const fallbackSecondaryRef = useRef<HTMLAnchorElement | null>(null);
 
   useEffect(() => {
     if (!open) {
-      setShowFallback(false);
       return;
     }
 
     setLoading(true);
-    setShowFallback(false);
 
     const timeout = window.setTimeout(() => setLoading(false), 8000);
-    const fallbackTimeout = window.setTimeout(() => setShowFallback(true), 10000);
 
     let currentIframe: HTMLIFrameElement | null = null;
     let loadHandler: (() => void) | null = null;
@@ -41,9 +35,7 @@ export function BookingOverlay({ open, onClose, email }: BookingOverlayProps) {
 
       currentIframe = iframe;
       loadHandler = () => {
-        window.clearTimeout(fallbackTimeout);
         setLoading(false);
-        setShowFallback(false);
       };
 
       currentIframe.addEventListener("load", loadHandler);
@@ -57,7 +49,6 @@ export function BookingOverlay({ open, onClose, email }: BookingOverlayProps) {
 
     return () => {
       window.clearTimeout(timeout);
-      window.clearTimeout(fallbackTimeout);
       observer.disconnect();
       if (currentIframe && loadHandler) {
         currentIframe.removeEventListener("load", loadHandler);
@@ -77,22 +68,10 @@ export function BookingOverlay({ open, onClose, email }: BookingOverlayProps) {
     };
   }, [open]);
 
-  // Focus the primary action when fallback appears
-  useEffect(() => {
-    if (showFallback) {
-      fallbackPrimaryRef.current?.focus();
-    }
-  }, [showFallback]);
-
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        if (showFallback) {
-          event.preventDefault();
-          setShowFallback(false);
-          return;
-        }
         onClose();
       }
     };
@@ -123,7 +102,7 @@ export function BookingOverlay({ open, onClose, email }: BookingOverlayProps) {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("keydown", onTabTrap, true);
     };
-  }, [open, onClose, showFallback]);
+  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -133,8 +112,7 @@ export function BookingOverlay({ open, onClose, email }: BookingOverlayProps) {
         <div className="booking-head">
           <div>
             <p className="booking-eyebrow">reserve a 1-on-1 meeting</p>
-            <h2 className="booking-title">Pick a time
-              or email or DM
+            <h2 className="booking-title">Pick a time at your convenience
             </h2>
           </div>
           <button
@@ -151,48 +129,12 @@ export function BookingOverlay({ open, onClose, email }: BookingOverlayProps) {
         <div
           className="booking-body"
           ref={embedRef}
-          style={showFallback ? { overflow: "hidden" } : undefined}
         >
           {loading && (
             <div className="booking-loading" role="status" aria-live="polite">
               <div className="booking-loadingInner">
                 <div className="spinner" />
                 <span>Loading calendar…</span>
-              </div>
-            </div>
-          )}
-          {showFallback && (
-            <div
-              className="booking-fallback"
-              role="alert"
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => {
-                if (e.key === "ArrowDown" || e.key === "ArrowRight") {
-                  e.preventDefault();
-                  fallbackSecondaryRef.current?.focus();
-                }
-                if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
-                  e.preventDefault();
-                  fallbackPrimaryRef.current?.focus();
-                }
-              }}
-            >
-              <div className="booking-fallbackCard">
-                <p className="booking-fallbackTitle">Calendar slow?</p>
-                <div className="booking-fallbackLinks">
-                  <a
-                    href="https://cal.com/milaforge/intro"
-                    target="_blank"
-                    rel="noreferrer"
-                    ref={fallbackPrimaryRef}
-                  >
-                    Open booking page
-                  </a>
-                  <a href={`mailto:${email}?subject=Recurring%20workflow%20context`} ref={fallbackSecondaryRef}>
-                    Email instead
-                  </a>
-                </div>
               </div>
             </div>
           )}

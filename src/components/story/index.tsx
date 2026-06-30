@@ -16,14 +16,12 @@ import {
   STORY_TAGLINE,
   type StoryChapter,
 } from "@data/storyChapters";
-import { CLIENT_PROOF_ITEMS } from "@data/clientProof";
-import { ClientProofStrip } from "@components/ClientProofStrip";
 import Terminal from "@components/terminal";
 import ChatDock from "@components/terminal/chat";
 import { useTerminalColors } from "@hooks/useTerminalColors";
 import { openChat } from "@stores/chatStore";
 import type { CommandButton, ContactInfo } from "@types";
-import { SquareTerminal } from "lucide-react";
+import { Github, Mail, Send } from "lucide-react";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import "./story.css";
 
@@ -34,11 +32,12 @@ const VH_PER_SCENE = 110;
 const MENU_WIDTH = 240;
 const MENU_HEIGHT = 48;
 const MENU_MARGIN = 6;
-const STORY_CLIENT_PROOF_LIMIT = 8;
 const SELECTED_WORK_COMMAND: CommandButton = {
   command: "selected_cases",
   typing: "simulate",
 };
+const TELEGRAM_URL = "https://t.me/milaforge";
+const GITHUB_URL = "https://github.com/milaforge";
 
 type StoryPageProps = {
   onBookCall: () => void;
@@ -178,38 +177,21 @@ function ChapterScene({
 }) {
   return (
     <Scene progress={progress} index={index} count={count} reduced={reduced}>
-      <GhostYear
-        progress={progress}
-        index={index}
-        count={count}
-        year={chapter.year}
-        reduced={reduced}
-      />
       <div
         className="story-chapter"
         style={{ "--story-accent": chapter.accent } as CSSProperties}
       >
-        <p className="story-era">{chapter.span}</p>
         <h2 className="story-hook">{chapter.hook}</h2>
         <p className="story-sub">{chapter.sub}</p>
+        <GhostYear
+          progress={progress}
+          index={index}
+          count={count}
+          year={chapter.year}
+          reduced={reduced}
+        />
       </div>
     </Scene>
-  );
-}
-
-function StoryClientProof() {
-  const clientProof = {
-    type: "clientProof" as const,
-    items: CLIENT_PROOF_ITEMS.slice(0, STORY_CLIENT_PROOF_LIMIT),
-  };
-
-  return (
-    <div className="story-clientProof">
-      <p className="story-clientProofText">
-        Trusted with systems that had to work:
-      </p>
-      <ClientProofStrip segment={clientProof} />
-    </div>
   );
 }
 
@@ -217,9 +199,10 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion() ?? false;
   const [activeScene, setActiveScene] = useState(0);
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(
-    null,
-  );
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [terminalStartupCommand, setTerminalStartupCommand] =
     useState<CommandButton | null>(null);
@@ -288,7 +271,9 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
     requestAnimationFrame(() => {
-      document.querySelector<HTMLTextAreaElement>(".story-terminalBody .t-input")?.focus();
+      document
+        .querySelector<HTMLTextAreaElement>(".story-terminalBody .t-input")
+        ?.focus();
     });
     return () => {
       document.body.style.overflow = previousBodyOverflow;
@@ -313,8 +298,7 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
     };
 
     document.addEventListener("keydown", handleTerminalEscape);
-    return () =>
-      document.removeEventListener("keydown", handleTerminalEscape);
+    return () => document.removeEventListener("keydown", handleTerminalEscape);
   }, [terminalOpen]);
 
   const jumpToScene = (index: number) => {
@@ -324,6 +308,9 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
     const scrollable = track.offsetHeight - window.innerHeight;
     const target = top + ((index + 0.5) / sceneCount) * scrollable;
     window.scrollTo({ top: target, behavior: reduced ? "auto" : "smooth" });
+  };
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
   };
 
   const closeContextMenu = () => setContextMenu(null);
@@ -336,6 +323,7 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
     setTerminalOpen(false);
     setTerminalStartupCommand(null);
   };
+  const emailHref = `mailto:${contact?.email ?? "milaforge@proton.me"}?subject=System%20reliability%20context`;
 
   useEffect(() => {
     if (!contextMenu) return;
@@ -370,55 +358,62 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
     }
 
     event.preventDefault();
-    const maxX = Math.max(MENU_MARGIN, window.innerWidth - MENU_WIDTH - MENU_MARGIN);
-    const maxY = Math.max(MENU_MARGIN, window.innerHeight - MENU_HEIGHT - MENU_MARGIN);
+    const maxX = Math.max(
+      MENU_MARGIN,
+      window.innerWidth - MENU_WIDTH - MENU_MARGIN,
+    );
+    const maxY = Math.max(
+      MENU_MARGIN,
+      window.innerHeight - MENU_HEIGHT - MENU_MARGIN,
+    );
     setContextMenu({
       x: Math.min(Math.max(event.clientX, MENU_MARGIN), maxX),
       y: Math.min(Math.max(event.clientY, MENU_MARGIN), maxY),
     });
   };
 
-  const focusTerminalInput = (event: MouseEvent<HTMLDivElement>) => {
-    const target = event.target as Element | null;
-    if (
-      target?.closest(
-        "a, button, input, textarea, select, .t-searchModal, .t-contextMenu, .chat-window",
-      )
-    ) {
-      return;
-    }
-
-    requestAnimationFrame(() => {
-      document.querySelector<HTMLTextAreaElement>(".story-terminalBody .t-input")?.focus();
-    });
-  };
-
   return (
     <div className="story-root" onContextMenu={handleContextMenu}>
       <header className="story-topbar">
-        <span className="story-brand">Milad</span>
-        {isOutroScene ? (
-          <nav className="story-outroNav" aria-label="Closing scene navigation">
-            <button
-              type="button"
-              className="story-navLink story-navIcon"
-              onClick={() => openTerminal()}
-              aria-label="Open terminal"
-            >
-              <SquareTerminal size={18} strokeWidth={2} aria-hidden="true" />
-            </button>
-            <a className="story-navLink" href={`${BASE}blog/`}>
-              Writing
-            </a>
-            <button
-              type="button"
-              className="story-navCta"
-              onClick={onBookCall}
-            >
-              Discuss a problem
-            </button>
-          </nav>
-        ) : (
+        <div className="story-brandGroup">
+          <button type="button" className="story-brand" onClick={scrollToTop}>
+            Milad
+          </button>
+          <a className="story-brandSecondary" title="Read Blog" href={`${BASE}blog/`}>
+            Blog
+          </a>
+
+          <a
+            className="story-brandIconLink"
+            href={emailHref}
+            aria-label="Email Milad"
+            title="Send an email"
+          >
+            <Mail size={18} strokeWidth={1} aria-hidden="true" />
+          </a>
+          <a
+            className="story-brandIconLink"
+            href={TELEGRAM_URL}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Message Milad on Telegram"
+            title="Reach out on Telegram"
+          >
+            <Send size={18} strokeWidth={1} aria-hidden="true" />
+          </a>
+
+          <a
+            className="story-brandIconLink"
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="GitHub"
+            title="Check out Github"
+          >
+            <Github size={15} strokeWidth={2} aria-hidden="true" />
+          </a>
+        </div>
+        {isOutroScene ? null : (
           <button
             type="button"
             className="story-skip t-commandLink t-pressable is-secondary"
@@ -466,18 +461,23 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
                 <span className="story-avatarStatus" aria-hidden="true" />
               </button>
               <p className="story-era">
-                {STORY_END_YEAR} → {STORY_START_YEAR}
+                {STORY_START_YEAR} → {STORY_END_YEAR}
               </p>
               <h1 className="story-hook">{STORY_TAGLINE}</h1>
-              <p className="story-sub">
-                Twenty years — software, security, Web3, AI — in one scroll.
-              </p>
+              <p className="story-sub">20 years of software Engineering</p>
+              <button
+                type="button"
+                className="story-introProof t-commandLink t-pressable is-secondary"
+                onClick={() => openTerminal(SELECTED_WORK_COMMAND)}
+              >
+                <span className="t-commandLabel">Proof</span>
+              </button>
               <motion.p
                 className="story-scrollHint"
                 style={{ opacity: hintOpacity }}
               >
-                <span className="story-key">↓</span> forward ·{" "}
-                <span className="story-key">↑</span> rewind
+                <span className="story-key">↓</span> Read my story{" "}
+                {/* <span className="story-key">↑</span> rewind */}
                 <span aria-hidden className="story-hintArrow">
                   ▾
                 </span>
@@ -512,35 +512,24 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
               reduced={reduced}
             />
             <div className="story-chapter story-outro">
-              <p className="story-outroEyebrow">
-                SOFTWARE RELIABILITY
-              </p>
+              <p className="story-outroEyebrow">PREDICTABLE SOFTWARE</p>
               <h2 className="story-hook">
                 Bring me the system
                 <br />
                 you don’t trust.
               </h2>
               <p className="story-sub story-outroSub">
-                I investigate how systems fail,
-                then turn those failures into predictable outcomes.
+                Retries, crashes, duplicate effects, unsafe automation.
               </p>
-              <div className="story-outroActions">
+              <div className="story-outroPrimary">
                 <button
                   type="button"
                   className="story-primaryCta"
                   onClick={onBookCall}
                 >
-                  Discuss a system →
-                </button>
-                <button
-                  type="button"
-                  className="story-secondaryCta"
-                  onClick={() => openTerminal(SELECTED_WORK_COMMAND)}
-                >
-                  View selected work
+                  Evaluate your case
                 </button>
               </div>
-              <StoryClientProof />
             </div>
           </Scene>
 
@@ -554,43 +543,16 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
               <span className="story-nextTimelineLabel">NEXT</span>
             </div>
           ) : (
-            <>
-              {/* chapter rail */}
-              <nav className="story-rail" aria-label="Story chapters">
-                {Array.from({ length: sceneCount }, (_, i) => {
-                  const label =
-                    i === 0
-                      ? "Intro"
-                      : i === sceneCount - 1
-                        ? "Now"
-                        : displayChapters[i - 1].year;
-                  return (
-                    <button
-                      key={label + i}
-                      type="button"
-                      className={`story-railDot${i === activeScene ? " is-active" : ""}`}
-                      aria-label={`Jump to ${label}`}
-                      aria-current={i === activeScene ? "step" : undefined}
-                      onClick={() => jumpToScene(i)}
-                    >
-                      <span className="story-railLabel">{label}</span>
-                    </button>
-                  );
-                })}
-              </nav>
-
-              {/* time axis: past <-> future */}
-              <div className="story-timeline" aria-hidden>
-                <span className="story-timelineYear">{STORY_END_YEAR}</span>
-                <div className="story-timelineBar">
-                  <motion.div
-                    className="story-timelineFill"
-                    style={{ scaleX: timelineScale }}
-                  />
-                </div>
-                <span className="story-timelineYear">{STORY_START_YEAR}</span>
+            <div className="story-timeline" aria-hidden>
+              <span className="story-timelineYear">{STORY_END_YEAR}</span>
+              <div className="story-timelineBar">
+                <motion.div
+                  className="story-timelineFill"
+                  style={{ scaleX: timelineScale }}
+                />
               </div>
-            </>
+              <span className="story-timelineYear">{STORY_START_YEAR}</span>
+            </div>
           )}
         </div>
       </div>
@@ -619,7 +581,6 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
           role="dialog"
           aria-modal="true"
           aria-label="Terminal"
-          onMouseDown={focusTerminalInput}
         >
           <div className="story-terminalPanel">
             <button
