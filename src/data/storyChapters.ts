@@ -14,7 +14,7 @@ export type StoryChapter = {
   glow: string;
 };
 
-export const STORY_TAGLINE = "I go where the work takes me.";
+export const STORY_TAGLINE = "Bring me the idea or the software you no longer trust.";
 export const STORY_START_YEAR = "2006";
 export const STORY_END_YEAR = "2026";
 

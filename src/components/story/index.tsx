@@ -21,7 +21,7 @@ import ChatDock from "@components/terminal/chat";
 import { useTerminalColors } from "@hooks/useTerminalColors";
 import { openChat } from "@stores/chatStore";
 import type { CommandButton, ContactInfo } from "@types";
-import { Github, Mail, Send } from "lucide-react";
+import { CalendarCheck, Github, Mail, Send } from "lucide-react";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import "./story.css";
 
@@ -145,16 +145,18 @@ function GhostYear({
   count,
   year,
   reduced,
+  endX = -90,
 }: {
   progress: MotionValue<number>;
   index: number;
   count: number;
   year: string;
   reduced: boolean;
+  endX?: number;
 }) {
   const start = index / count;
   const end = (index + 1) / count;
-  const x = useTransform(progress, [start, end], reduced ? [0, 0] : [90, -90]);
+  const x = useTransform(progress, [start, end], reduced ? [0, 0] : [90, endX]);
   return (
     <motion.span aria-hidden className="story-ghostYear" style={{ x }}>
       {year}
@@ -250,6 +252,26 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
   const glow = useMotionTemplate`radial-gradient(880px circle at 50% 22%, ${glowColor}, transparent 70%)`;
 
   const timelineScale = useTransform(scrub, [0, 1], [0, 1]);
+  const introContactsOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.45 / sceneCount, 0.85 / sceneCount],
+    [1, 1, 0],
+  );
+  const introContactsY = useTransform(
+    scrollYProgress,
+    [0, 0.85 / sceneCount],
+    [0, 12],
+  );
+  const timelineOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.45 / sceneCount, 0.85 / sceneCount],
+    [0, 0, 1],
+  );
+  const timelineY = useTransform(
+    scrollYProgress,
+    [0, 0.85 / sceneCount],
+    [12, 0],
+  );
   const hintOpacity = useTransform(
     scrollYProgress,
     [0, 0.6 / sceneCount],
@@ -379,6 +401,14 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
           <button type="button" className="story-brand" onClick={scrollToTop}>
             Milad
           </button>
+          <button
+            type="button"
+            className="story-brandSecondary"
+            title="See selected work"
+            onClick={() => openTerminal(SELECTED_WORK_COMMAND)}
+          >
+            Works
+          </button>
           <a
             className="story-brandSecondary"
             title="Read Blog"
@@ -386,45 +416,7 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
           >
             Blog
           </a>
-          <a
-            className="story-brandIconLink"
-            href={emailHref}
-            aria-label="Email Milad"
-            title="Send an email"
-          >
-            <Mail size={18} strokeWidth={1} aria-hidden="true" />
-          </a>
-          <a
-            className="story-brandIconLink"
-            href={TELEGRAM_URL}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Message Milad on Telegram"
-            title="Reach out on Telegram"
-          >
-            <Send size={18} strokeWidth={1} aria-hidden="true" />
-          </a>
-
-          <a
-            className="story-brandIconLink"
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="GitHub"
-            title="Check out Github"
-          >
-            <Github size={15} strokeWidth={2} aria-hidden="true" />
-          </a>
         </div>
-        {isOutroScene ? null : (
-          <button
-            type="button"
-            className="story-skip t-commandLink t-pressable is-secondary"
-            onClick={() => jumpToScene(sceneCount - 1)}
-          >
-            <span className="t-commandLabel">Discuss your project</span>
-          </button>
-        )}
       </header>
 
       <div
@@ -471,13 +463,6 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
                 20 years turning ideas and fragile software into dependable
                 products.
               </p>
-              <button
-                type="button"
-                className="story-introProof t-commandLink t-pressable is-secondary"
-                onClick={() => openTerminal(SELECTED_WORK_COMMAND)}
-              >
-                <span className="t-commandLabel">See selected work</span>
-              </button>
               <motion.p
                 className="story-scrollHint"
                 style={{ opacity: hintOpacity }}
@@ -510,32 +495,28 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
             reduced={reduced}
             className="is-outro"
           >
-            <GhostYear
-              progress={scrub}
-              index={sceneCount - 1}
-              count={sceneCount}
-              year=""
-              reduced={reduced}
-            />
-            <div className="story-chapter story-outro">
-              <p className="story-outroEyebrow">DEPENDABLE SOFTWARE</p>
-              <h2 className="story-hook">
-                Bring me the idea or the software
-                <br />
-                you no longer trust.
-              </h2>
-              <p className="story-sub story-outroSub">
-                I build new products, strengthen fragile systems, and make
-                automation safer and easier to operate.
-              </p>
-              <div className="story-outroPrimary">
-                <button
-                  type="button"
-                  className="story-primaryCta"
-                  onClick={onBookCall}
-                >
-                  Discuss your project
-                </button>
+            <div className="story-outroFrame">
+              <GhostYear
+                progress={scrub}
+                index={sceneCount - 1}
+                count={sceneCount}
+                year="Now"
+                reduced={reduced}
+                endX={0}
+              />
+              <div className="story-chapter story-outro">
+                <div className="story-outroPrimary">
+                  <button
+                    type="button"
+                    className="t-commandLink t-pressable is-secondary"
+                    onClick={onBookCall}
+                  >
+                    Discuss your project
+                  </button>
+                </div>
+                <p className="story-outroEyebrow">
+                  I go where the work takes me.
+                </p>
               </div>
             </div>
           </Scene>
@@ -550,16 +531,75 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
               <span className="story-nextTimelineLabel">NEXT</span>
             </div>
           ) : (
-            <div className="story-timeline" aria-hidden>
-              <span className="story-timelineYear">{STORY_END_YEAR}</span>
-              <div className="story-timelineBar">
-                <motion.div
-                  className="story-timelineFill"
-                  style={{ scaleX: timelineScale }}
-                />
-              </div>
-              <span className="story-timelineYear">{STORY_START_YEAR}</span>
-            </div>
+            <>
+              <motion.nav
+                className="story-bottomContacts"
+                aria-label="Contact Milad"
+                style={{
+                  opacity: introContactsOpacity,
+                  x: "-50%",
+                  y: introContactsY,
+                  pointerEvents: activeScene === 0 ? "auto" : "none",
+                }}
+              >
+                <button
+                  type="button"
+                  className="story-bottomContactLink"
+                  onClick={onBookCall}
+                  aria-label="Book a call"
+                  title="Book a call"
+                >
+                  <CalendarCheck
+                    size={17}
+                    strokeWidth={1.8}
+                    aria-hidden="true"
+                  />
+                </button>
+
+                <a
+                  className="story-bottomContactLink"
+                  href={emailHref}
+                  aria-label="Email Milad"
+                  title="Send an email"
+                >
+                  <Mail size={17} strokeWidth={1.6} aria-hidden="true" />
+                </a>
+                <a
+                  className="story-bottomContactLink"
+                  href={TELEGRAM_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Message Milad on Telegram"
+                  title="Reach out on Telegram"
+                >
+                  <Send size={17} strokeWidth={1.6} aria-hidden="true" />
+                </a>
+                <a
+                  className="story-bottomContactLink"
+                  href={GITHUB_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="GitHub"
+                  title="Check out Github"
+                >
+                  <Github size={16} strokeWidth={2} aria-hidden="true" />
+                </a>
+              </motion.nav>
+              <motion.div
+                className="story-timeline"
+                aria-hidden
+                style={{ opacity: timelineOpacity, x: "-50%", y: timelineY }}
+              >
+                <span className="story-timelineYear">{STORY_END_YEAR}</span>
+                <div className="story-timelineBar">
+                  <motion.div
+                    className="story-timelineFill"
+                    style={{ scaleX: timelineScale }}
+                  />
+                </div>
+                <span className="story-timelineYear">{STORY_START_YEAR}</span>
+              </motion.div>
+            </>
           )}
         </div>
       </div>
