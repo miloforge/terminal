@@ -4948,7 +4948,66 @@ a.blog-backLink:hover {
   text-decoration: underline;
 }
 
-/* Light theme: article body text override */
+/* Blog markdown owns its contrast instead of inheriting terminal color tokens. */
+.blog-page .t-markdown--blog {
+  color: var(--blog-text);
+}
+
+.blog-page .t-markdown--blog .t-markdownBody {
+  color: rgba(234, 241, 251, 0.86);
+}
+
+.blog-page .t-markdownBody h1,
+.blog-page .t-markdownBody h2,
+.blog-page .t-markdownBody h3,
+.blog-page .t-markdownBody h4,
+.blog-page .t-markdownBody h5,
+.blog-page .t-markdownBody h6 {
+  color: var(--blog-text);
+}
+
+.blog-page .t-markdownBody a {
+  color: var(--blog-accent-muted);
+}
+
+.blog-page .t-markdownBody a:hover {
+  color: var(--blog-accent);
+}
+
+.blog-page .t-markdownBody code,
+.blog-page .t-markdownBody pre {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(234, 241, 251, 0.9);
+}
+
+.blog-page .t-markdownBody pre {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+}
+
+.blog-page .t-markdownBody pre code {
+  background: transparent;
+}
+
+.blog-page .t-markdownBody blockquote {
+  border-left-color: var(--blog-accent-muted);
+  color: rgba(234, 241, 251, 0.78);
+}
+
+.blog-page .t-markdownTable {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.blog-page .t-markdownBody th,
+.blog-page .t-markdownBody td {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.blog-page .t-markdownBody th {
+  color: var(--blog-text);
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .blog-page.is-light .t-markdown--blog .t-markdownBody {
   color: #2a2a2a;
 }
