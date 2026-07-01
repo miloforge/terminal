@@ -9,6 +9,15 @@ type LocationLike = {
   search?: string;
 };
 
+type NavigationClickLike = {
+  button: number;
+  ctrlKey?: boolean;
+  defaultPrevented?: boolean;
+  metaKey?: boolean;
+  shiftKey?: boolean;
+  altKey?: boolean;
+};
+
 function cleanBasePath(base: string) {
   if (!base || base === "/") return "";
   return base.replace(/\/$/, "");
@@ -107,4 +116,39 @@ export function getClientRoutePath(
   if (route.name !== "blog" && !isHomeRoute) return null;
 
   return `${appRoutePathname(route, base)}${target.search}${target.hash}`;
+}
+
+export function getClientRoutePathForClick(
+  event: NavigationClickLike,
+  href: string,
+  target: string | null | undefined,
+  download: boolean,
+  current: LocationLike,
+  base = import.meta.env.BASE_URL || "/",
+) {
+  if (event.defaultPrevented) return null;
+  if (event.button !== 0) return null;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+    return null;
+  }
+  if (download) return null;
+  if (target && target.toLowerCase() !== "_self") return null;
+
+  let targetUrl: URL;
+  try {
+    targetUrl = new URL(href, `${current.origin}${current.pathname}`);
+  } catch {
+    return null;
+  }
+
+  if (
+    targetUrl.pathname === current.pathname &&
+    targetUrl.search === (current.search || "") &&
+    targetUrl.hash &&
+    targetUrl.hash !== (current.hash || "")
+  ) {
+    return null;
+  }
+
+  return getClientRoutePath(href, current, base);
 }

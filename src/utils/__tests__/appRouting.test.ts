@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  getClientRoutePathForClick,
   getClientRoutePath,
   parseAppRoute,
   withBasePath,
@@ -63,6 +64,70 @@ describe("app routing", () => {
     ).toBeNull();
     expect(
       getClientRoutePath("https://milaforge.dev/other/blog/", current, base),
+    ).toBeNull();
+  });
+
+  it("allows unmodified left-clicks on same-origin app links to stay in React", () => {
+    expect(
+      getClientRoutePathForClick(
+        { button: 0 },
+        "https://milaforge.dev/terminal/blog/",
+        "",
+        false,
+        current,
+        base,
+      ),
+    ).toBe("/terminal/blog/");
+  });
+
+  it("preserves browser navigation for modified, download, and new-tab clicks", () => {
+    expect(
+      getClientRoutePathForClick(
+        { button: 0, metaKey: true },
+        "https://milaforge.dev/terminal/blog/",
+        "",
+        false,
+        current,
+        base,
+      ),
+    ).toBeNull();
+    expect(
+      getClientRoutePathForClick(
+        { button: 0 },
+        "https://milaforge.dev/terminal/blog/",
+        "_blank",
+        false,
+        current,
+        base,
+      ),
+    ).toBeNull();
+    expect(
+      getClientRoutePathForClick(
+        { button: 0 },
+        "https://milaforge.dev/terminal/blog/",
+        "",
+        true,
+        current,
+        base,
+      ),
+    ).toBeNull();
+  });
+
+  it("preserves native same-page hash navigation", () => {
+    expect(
+      getClientRoutePathForClick(
+        { button: 0 },
+        "https://milaforge.dev/terminal/blog/automation-risk/#failure-mode",
+        "",
+        false,
+        {
+          origin: "https://milaforge.dev",
+          pathname: "/terminal/blog/automation-risk/",
+          search: "",
+          hash: "",
+        },
+        base,
+      ),
     ).toBeNull();
   });
 });
