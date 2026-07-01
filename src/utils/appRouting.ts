@@ -150,5 +150,25 @@ export function getClientRoutePathForClick(
     return null;
   }
 
-  return getClientRoutePath(href, current, base);
+  const routePath = getClientRoutePath(href, current, base);
+  if (routePath) return routePath;
+
+  if (
+    targetUrl.origin === current.origin &&
+    targetUrl.pathname === current.pathname &&
+    targetUrl.search === (current.search || "") &&
+    targetUrl.hash === (current.hash || "") &&
+    pathInsideBase(targetUrl.pathname, base)
+  ) {
+    const route = parseAppRoute(targetUrl.pathname, base);
+    const cleanBase = cleanBasePath(base);
+    const isHomeRoute =
+      targetUrl.pathname === withBasePath("/", base) ||
+      targetUrl.pathname === cleanBase;
+    if (route.name === "blog" || isHomeRoute) {
+      return `${appRoutePathname(route, base)}${targetUrl.search}${targetUrl.hash}`;
+    }
+  }
+
+  return null;
 }

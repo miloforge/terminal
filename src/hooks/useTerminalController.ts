@@ -36,6 +36,15 @@ const isLineSegment = (value: unknown): value is LineSegment =>
   "type" in value &&
   typeof (value as { type?: unknown }).type === "string";
 
+function removeInputRange(value: string, start: number, end: number) {
+  const suffixStart =
+    start > 0 && /\s/.test(value[start - 1]) && /\s/.test(value[end] || "")
+      ? end + 1
+      : end;
+
+  return value.slice(0, start) + value.slice(suffixStart);
+}
+
 export function deletePreviousTerminalWord(
   value: string,
   selectionStart: number,
@@ -46,7 +55,7 @@ export function deletePreviousTerminalWord(
 
   if (start !== end) {
     return {
-      value: value.slice(0, start) + value.slice(end),
+      value: removeInputRange(value, start, end),
       caret: start,
     };
   }
@@ -60,7 +69,7 @@ export function deletePreviousTerminalWord(
   }
 
   return {
-    value: value.slice(0, wordStart) + value.slice(start),
+    value: removeInputRange(value, wordStart, start),
     caret: wordStart,
   };
 }
