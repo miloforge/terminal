@@ -3,19 +3,54 @@ import Terminal from "@components/terminal";
 import BookingOverlay from "@components/BookingOverlay";
 import StoryPage from "@components/story";
 import BlogPage from "./pages/BlogPage";
-import { parseAppRoute } from "./utils/appRouting";
+import { getClientRoutePathForClick, parseAppRoute } from "./utils/appRouting";
 
 const CONTACT_EMAIL =
   import.meta.env.VITE_CONTACT_EMAIL || "milaforge@proton.me";
 
-function useHashRoute() {
-  const [hash, setHash] = useState(() => window.location.hash);
+function readBrowserLocation() {
+  return {
+    hash: window.location.hash,
+    pathname: window.location.pathname,
+    search: window.location.search,
+  };
+}
+
+function useAppLocation() {
+  const [location, setLocation] = useState(readBrowserLocation);
+
   useEffect(() => {
-    const onHashChange = () => setHash(window.location.hash);
-    window.addEventListener("hashchange", onHashChange);
-    return () => window.removeEventListener("hashchange", onHashChange);
+    const refreshLocation = () => setLocation(readBrowserLocation());
+    const onDocumentClick = (event: MouseEvent) => {
+      const anchor = (event.target as Element | null)?.closest("a[href]");
+      if (!(anchor instanceof HTMLAnchorElement)) return;
+
+      const routePath = getClientRoutePathForClick(
+        event,
+        anchor.href,
+        anchor.target,
+        anchor.hasAttribute("download"),
+        window.location,
+      );
+      if (!routePath) return;
+
+      event.preventDefault();
+      window.history.pushState(null, "", routePath);
+      refreshLocation();
+      window.scrollTo(0, 0);
+    };
+
+    window.addEventListener("hashchange", refreshLocation);
+    window.addEventListener("popstate", refreshLocation);
+    document.addEventListener("click", onDocumentClick);
+    return () => {
+      window.removeEventListener("hashchange", refreshLocation);
+      window.removeEventListener("popstate", refreshLocation);
+      document.removeEventListener("click", onDocumentClick);
+    };
   }, []);
-  return hash;
+
+  return location;
 }
 
 export function shouldShowStoryRoute(hash: string) {
@@ -24,9 +59,9 @@ export function shouldShowStoryRoute(hash: string) {
 
 export default function App() {
   const [bookingOpen, setBookingOpen] = useState(false);
-  const hash = useHashRoute();
-  const route = parseAppRoute(window.location.pathname);
-  const isStory = shouldShowStoryRoute(hash);
+  const location = useAppLocation();
+  const route = parseAppRoute(location.pathname);
+  const isStory = shouldShowStoryRoute(location.hash);
 
   if (route.name === "blog") {
     return <BlogPage slug={route.slug} />;
