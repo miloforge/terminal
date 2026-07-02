@@ -1469,7 +1469,8 @@
     text-transform: uppercase;
   }
 
-  @media (hover: none), (pointer: coarse) {
+  @media (hover: none),
+  (pointer: coarse) {
     :is(.intro-start-line, .t-work, .story-clientProof) .intro-clientTooltip {
       display: none;
     }
@@ -3612,6 +3613,9 @@
     font-weight: 700;
     letter-spacing: 0;
     line-height: 1;
+    display: inline-flex;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .t-workMetricLabel {
@@ -4827,7 +4831,7 @@ a.blog-backLink:hover {
   color: var(--blog-text);
 }
 
-.blog-header > p {
+.blog-header>p {
   margin: 0 0 16px;
   font-size: 15px;
   color: var(--blog-text-muted);
@@ -5005,7 +5009,7 @@ a.blog-backLink:hover {
   letter-spacing: 0.3px;
 }
 
-.blog-articleHeader > p {
+.blog-articleHeader>p {
   margin: 0;
   font-size: 15px;
   color: var(--blog-text-subtle);
