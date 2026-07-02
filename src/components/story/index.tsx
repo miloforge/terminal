@@ -202,6 +202,7 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion() ?? false;
   const [activeScene, setActiveScene] = useState(0);
+  const [avatarDocked, setAvatarDocked] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -235,6 +236,7 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
       Math.max(0, Math.floor(v * sceneCount)),
     );
     setActiveScene(next);
+    setAvatarDocked(v > 0.035);
   });
 
   // ambient glow drifts through each chapter's color as time passes
@@ -419,6 +421,34 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
           </a>
         </div>
       </header>
+      <button
+        type="button"
+        className={`story-avatarButton story-avatarLauncher${
+          avatarDocked ? " is-docked" : ""
+        }`}
+        aria-label="Open chatbot"
+        onClick={openChat}
+      >
+        <img
+          className="story-avatar"
+          src={AVATAR_SRC}
+          alt="Portrait of Milad"
+          width={84}
+          height={84}
+        />
+        <span
+          className={`story-avatarStatus${unread > 0 ? " has-unread" : ""}`}
+          aria-hidden="true"
+        />
+        {unread > 0 ? (
+          <span
+            className="story-avatarUnread"
+            aria-label={`${unread} unread messages`}
+          >
+            {unread > 9 ? "9+" : unread}
+          </span>
+        ) : null}
+      </button>
 
       <div
         ref={trackRef}
@@ -441,32 +471,7 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
             className="is-intro"
           >
             <div className="story-chapter story-intro">
-              <button
-                type="button"
-                className="story-avatarButton"
-                aria-label="Open chatbot"
-                onClick={openChat}
-              >
-                <img
-                  className="story-avatar"
-                  src={AVATAR_SRC}
-                  alt="Portrait of Milad"
-                  width={84}
-                  height={84}
-                />
-                <span
-                  className={`story-avatarStatus${unread > 0 ? " has-unread" : ""}`}
-                  aria-hidden="true"
-                />
-                {unread > 0 ? (
-                  <span
-                    className="story-avatarUnread"
-                    aria-label={`${unread} unread messages`}
-                  >
-                    {unread > 9 ? "9+" : unread}
-                  </span>
-                ) : null}
-              </button>
+              <div className="story-avatarSpacer" aria-hidden="true" />
               <p className="story-era">
                 {STORY_START_YEAR} → {STORY_END_YEAR}
               </p>
