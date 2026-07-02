@@ -19,7 +19,7 @@ import {
 import Terminal from "@components/terminal";
 import ChatDock from "@components/terminal/chat";
 import { useTerminalColors } from "@hooks/useTerminalColors";
-import { openChat } from "@stores/chatStore";
+import { openChat, useChatStore } from "@stores/chatStore";
 import type { CommandButton, ContactInfo } from "@types";
 import { CalendarCheck, Github, Mail, Send } from "lucide-react";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
@@ -198,6 +198,7 @@ function ChapterScene({
 }
 
 export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
+  const unread = useChatStore((state) => state.unread);
   const trackRef = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion() ?? false;
   const [activeScene, setActiveScene] = useState(0);
@@ -453,7 +454,18 @@ export default function StoryPage({ onBookCall, contact }: StoryPageProps) {
                   width={84}
                   height={84}
                 />
-                <span className="story-avatarStatus" aria-hidden="true" />
+                <span
+                  className={`story-avatarStatus${unread > 0 ? " has-unread" : ""}`}
+                  aria-hidden="true"
+                />
+                {unread > 0 ? (
+                  <span
+                    className="story-avatarUnread"
+                    aria-label={`${unread} unread messages`}
+                  >
+                    {unread > 9 ? "9+" : unread}
+                  </span>
+                ) : null}
               </button>
               <p className="story-era">
                 {STORY_START_YEAR} → {STORY_END_YEAR}

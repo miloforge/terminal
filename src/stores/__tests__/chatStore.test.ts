@@ -125,4 +125,24 @@ describe("chat store streaming", () => {
     expect(assistantMessages).toHaveLength(1);
     expect(assistantMessages[0].content).toBe("Hello");
   });
+
+  it("counts failed assistant replies as unread when chat is minimized", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
+    useChatStore.setState({
+      isOpen: false,
+      isMinimized: true,
+      unread: 0,
+    });
+
+    await useChatStore.getState().sendMessage("Will this fail?");
+
+    const state = useChatStore.getState();
+    expect(state.unread).toBe(1);
+    expect(state.messages.at(-1)).toMatchObject({
+      role: "assistant",
+      content:
+        "I hit a snag reaching the server. Please try again or check your connection.",
+    });
+  });
 });

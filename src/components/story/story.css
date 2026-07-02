@@ -290,6 +290,57 @@
   pointer-events: none;
 }
 
+.story-avatarStatus.has-unread {
+  background: #f59f00;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.28),
+    inset 0 0 0 1px color-mix(in srgb, #9a5b00 62%, transparent);
+}
+
+.story-avatarStatus.has-unread::after {
+  animation: none;
+  border-color: transparent;
+}
+
+.story-avatarUnread {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #fff0f3;
+  color: #c92a4b;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--bg, #fff0f3) 96%, transparent),
+    0 10px 22px rgba(120, 16, 38, 0.22);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center;
+  animation: story-avatar-unread-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes story-avatar-unread-breathe {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, var(--bg, #fff0f3) 96%, transparent),
+      0 10px 22px rgba(120, 16, 38, 0.22);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow:
+      0 0 0 5px color-mix(in srgb, #ff8fa3 24%, transparent),
+      0 14px 28px rgba(120, 16, 38, 0.3);
+    transform: scale(1.08);
+  }
+}
+
 @keyframes story-avatar-status-wave {
   0% {
     opacity: 0;
@@ -663,15 +714,20 @@
 .story-nextTimelineShortLine {
   height: 1px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--text) 26%, transparent);
 }
 
 .story-nextTimelineLine {
   flex: 1;
+  background: var(--accent);
 }
 
 .story-nextTimelineShortLine {
   width: 28px;
+  background-image: repeating-linear-gradient(
+    to right,
+    color-mix(in srgb, var(--text) 26%, transparent) 0 3px,
+    transparent 3px 6px
+  );
 }
 
 .story-nextTimelineDot {
@@ -845,6 +901,10 @@
   }
 
   .story-avatarStatus::after {
+    animation: none;
+  }
+
+  .story-avatarUnread {
     animation: none;
   }
 }

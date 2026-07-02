@@ -417,6 +417,8 @@ export const useChatStore = create<ChatStore>()(
               loading: false,
               error:
                 error instanceof Error ? error.message : "Something went wrong",
+              unread:
+                prev.isOpen && !prev.isMinimized ? prev.unread : prev.unread + 1,
               messages: [
                 ...prev.messages,
                 {
